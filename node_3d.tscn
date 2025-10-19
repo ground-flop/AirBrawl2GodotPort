@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://b4pbvn6udxpbq"]
+
+[ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://shattered mars or something.blend" id="1_noarx"]
+[ext_resource type="ArrayMesh" uid="uid://bkjtkfofbntt1" path="res://ship.obj" id="2_a0tk4"]
+[ext_resource type="Material" uid="uid://cwhhauy773yvw" path="res://red.tres" id="2_r3fl7"]
+[ext_resource type="Script" uid="uid://d17rdxtgjmce0" path="res://scripts/plane_Controller.gd" id="3_a0tk4"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="shattered mars or something" parent="." instance=ExtResource("1_noarx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.003149, 1.1920929e-07, -146.0192)
+
+[node name="Ship" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 99.75512, 80.12083, 42.01327)
+material_override = ExtResource("2_r3fl7")
+mesh = ExtResource("2_a0tk4")
+script = ExtResource("3_a0tk4")
+metadata/transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Ship"]
+transform = Transform3D(-0.9999669, 0, -0.008133234, 0, 1, 0, 0.008133234, 0, -0.9999669, 0, 2.7703629, -11.521275)
