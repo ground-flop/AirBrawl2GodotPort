@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://b4pbvn6udxpbq"]
 
-[ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://shattered mars or something.blend" id="1_noarx"]
-[ext_resource type="ArrayMesh" uid="uid://bkjtkfofbntt1" path="res://ship.obj" id="2_a0tk4"]
-[ext_resource type="Material" uid="uid://cwhhauy773yvw" path="res://red.tres" id="2_r3fl7"]
+[ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://Models/shattered mars or something.blend" id="1_noarx"]
+[ext_resource type="ArrayMesh" uid="uid://bkjtkfofbntt1" path="res://Models/ship.obj" id="2_a0tk4"]
+[ext_resource type="Material" uid="uid://cwhhauy773yvw" path="res://materials/red.tres" id="2_r3fl7"]
 [ext_resource type="Script" uid="uid://d17rdxtgjmce0" path="res://scripts/plane_Controller.gd" id="3_a0tk4"]
 
 [node name="Node3D" type="Node3D"]

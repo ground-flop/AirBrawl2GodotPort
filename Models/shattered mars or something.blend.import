@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b34p47dlotjdj"
-path="res://.godot/imported/shattered mars or something.blend-911039cb1c17f789327776a49323e506.scn"
+path="res://.godot/imported/shattered mars or something.blend-1a9e745a6aa4fea9d0abbc2840c9c334.scn"
 
 [deps]
 
-source_file="res://shattered mars or something.blend"
-dest_files=["res://.godot/imported/shattered mars or something.blend-911039cb1c17f789327776a49323e506.scn"]
+source_file="res://Models/shattered mars or something.blend"
+dest_files=["res://.godot/imported/shattered mars or something.blend-1a9e745a6aa4fea9d0abbc2840c9c334.scn"]
 
 [params]
 
