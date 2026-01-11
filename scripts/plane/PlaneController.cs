@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 public partial class PlaneController : Node3D
@@ -31,13 +32,13 @@ public partial class PlaneController : Node3D
 		Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
 		PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
 
-		loadSettings();
+		LoadSettings();
 		GlobalPosition = StartPosition;
 
 		PlaneBody.MaxSpeed = MaxSpeed;
-		PlaneBody.Set("YawSensitivity", YawSensitivity);
-		PlaneBody.Set("RollSensitivity", RollSensitivity);
-		PlaneBody.Set("MouseYaw", MouseYaw);
+		PlaneBody.YawSensitivity = YawSensitivity;
+		PlaneBody.RollSensitivity = RollSensitivity;
+		PlaneBody.MouseYaw = MouseYaw;
 
 		Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
 	}
@@ -73,7 +74,47 @@ public partial class PlaneController : Node3D
 		this.CameraObject.Fov = float.Lerp(MinFov, MaxFov, (float)(PlaneBody.Get("speed").AsDouble() / PlaneBody.Get("MaxSpeed").AsDouble()));
 	}
 
-	private void loadSettings()
+	private void LoadSettings()
 	{
+		ConfigFile cfg = new ConfigFile();
+
+		if (cfg.Load("user://settings.cfg") == Godot.Error.Ok)
+		{
+			MouseYaw = (bool)cfg.GetValue("controls", "MouseYaw", false);
+			YawSensitivity = (float)cfg.GetValue("controls", "YawSensitivity", 3.0f);
+			RollSensitivity = (float)cfg.GetValue("controls", "RollSensitivity", 3.0f);
+		}
+	}
+
+	private void SetMouseYaw(bool MouseYaw)
+	{
+		this.MouseYaw = MouseYaw;
+		PlaneBody.MouseYaw = MouseYaw;
+		SaveSettings();
+	}
+
+	private void SetYawSensitivity(float YawSensitivity)
+	{
+		this.YawSensitivity = YawSensitivity;
+		PlaneBody.YawSensitivity = YawSensitivity;
+		SaveSettings();
+	}
+
+	private void SetRollSensitivity(float RollSensitivity)
+	{
+		this.RollSensitivity = RollSensitivity;
+		PlaneBody.RollSensitivity = RollSensitivity;
+		SaveSettings();
+	}
+
+	private void SaveSettings()
+	{
+		ConfigFile cfg = new ConfigFile();
+
+		cfg.SetValue("controls", "MouseYaw", MouseYaw);
+		cfg.SetValue("controls", "YawSensitivity", YawSensitivity);
+		cfg.SetValue("controls", "RollSensitivity", RollSensitivity);
+
+		cfg.Save("user://settings.cfg");
 	}
 }
