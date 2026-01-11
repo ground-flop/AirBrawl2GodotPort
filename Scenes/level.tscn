@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://b4pbvn6udxpbq"]
+
+[ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://materials/shattered mars or something.blend" id="1_k5f4k"]
+[ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/plane.tscn" id="2_6phgx"]
+
+[sub_resource type="Environment" id="Environment_i5arm"]
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.01
+
+[node name="Node3D" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+
+[node name="shattered mars or something" parent="." instance=ExtResource("1_k5f4k")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_i5arm")
+
+[node name="Plane" parent="." instance=ExtResource("2_6phgx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 107.35635, 0)
