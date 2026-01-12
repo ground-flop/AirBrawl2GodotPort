@@ -3,118 +3,138 @@ using Godot;
 
 public partial class PlaneController : Node3D
 {
-	Camera3D CameraObject;
-	Node3D CameraTarget;
-	PanelContainer Menu;
-	PlaneBodyController PlaneBody;
+    Camera3D CameraObject;
+    Node3D CameraTarget;
+    PanelContainer Menu;
+    PlaneBodyController PlaneBody;
 
-	[Export]
-	bool SinglePlayer = false;
-	[Export]
-	bool MouseYaw = false;
-	[Export]
-	float YawSensitivity = 3.0f;
-	[Export]
-	float RollSensitivity = 3.0f;
-	[Export]
-	float MaxSpeed = 250.0f;
-	[Export]
-	Vector3 StartPosition = new Vector3(100, 100, 0);
-	[Export]
-	float MinFov = 60.0f;
-	[Export]
-	float MaxFov = 120.0f;
+    [Export]
+    bool SinglePlayer = false;
+    [Export]
+    bool MouseYaw = false;
+    [Export]
+    float YawSensitivity = 3.0f;
+    [Export]
+    float RollSensitivity = 3.0f;
+    [Export]
+    float MaxSpeed = 250.0f;
+    [Export]
+    Vector3 StartPosition = new Vector3(100, 100, 0);
+    [Export]
+    float MinFov = 60.0f;
+    [Export]
+    float MaxFov = 120.0f;
 
-	public override void _Ready()
-	{
-		CameraObject = GetNode<Camera3D>("PlaneCamera");
-		CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
-		Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
-		PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
+    float Health = 100f;
+    float MaxHealth = 100f;
 
-		LoadSettings();
-		GlobalPosition = StartPosition;
+    public override void _Ready()
+    {
+        CameraObject = GetNode<Camera3D>("PlaneCamera");
+        CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
+        Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
+        PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
 
-		PlaneBody.MaxSpeed = MaxSpeed;
-		PlaneBody.YawSensitivity = YawSensitivity;
-		PlaneBody.RollSensitivity = RollSensitivity;
-		PlaneBody.MouseYaw = MouseYaw;
+        LoadSettings();
+        GlobalPosition = StartPosition;
 
-		Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
-	}
+        PlaneBody.MaxSpeed = MaxSpeed;
+        PlaneBody.YawSensitivity = YawSensitivity;
+        PlaneBody.RollSensitivity = RollSensitivity;
+        PlaneBody.MouseYaw = MouseYaw;
 
-	public override void _Process(double delta)
-	{
-		UpdateCamera(delta);
-		if (Menu.Visible)
-		{
-			Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
-			return;
-		}
-		else
-		{
-			Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
-		}
+        Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+        Health = MaxHealth;
+    }
 
-		UpdateFov();
-	}
+    public override void _Process(double delta)
+    {
+        UpdateCamera(delta);
+        if (Menu.Visible)
+        {
+            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
+            return;
+        }
+        else
+        {
+            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+        }
 
-	private void UpdateCamera(double delta)
-	{
-		float t = 1.0f - Mathf.Pow(0.001f, (float)delta);
+        UpdateFov();
+    }
 
-		Transform3D from = CameraObject.GlobalTransform;
-		Transform3D to = CameraTarget.GlobalTransform;
+    private void UpdateCamera(double delta)
+    {
+        float t = 1.0f - Mathf.Pow(0.001f, (float)delta);
 
-		CameraObject.GlobalTransform = from.InterpolateWith(to, t);
-	}
+        Transform3D from = CameraObject.GlobalTransform;
+        Transform3D to = CameraTarget.GlobalTransform;
 
-	private void UpdateFov()
-	{
-		this.CameraObject.Fov = float.Lerp(MinFov, MaxFov, (float)(PlaneBody.Get("speed").AsDouble() / PlaneBody.Get("MaxSpeed").AsDouble()));
-	}
+        CameraObject.GlobalTransform = from.InterpolateWith(to, t);
+    }
 
-	private void LoadSettings()
-	{
-		ConfigFile cfg = new ConfigFile();
+    private void UpdateFov()
+    {
+        this.CameraObject.Fov = float.Lerp(MinFov, MaxFov, (float)(PlaneBody.Get("speed").AsDouble() / PlaneBody.Get("MaxSpeed").AsDouble()));
+    }
 
-		if (cfg.Load("user://settings.cfg") == Godot.Error.Ok)
-		{
-			MouseYaw = (bool)cfg.GetValue("controls", "MouseYaw", false);
-			YawSensitivity = (float)cfg.GetValue("controls", "YawSensitivity", 3.0f);
-			RollSensitivity = (float)cfg.GetValue("controls", "RollSensitivity", 3.0f);
-		}
-	}
+    private void LoadSettings()
+    {
+        ConfigFile cfg = new ConfigFile();
 
-	private void SetMouseYaw(bool MouseYaw)
-	{
-		this.MouseYaw = MouseYaw;
-		PlaneBody.MouseYaw = MouseYaw;
-		SaveSettings();
-	}
+        if (cfg.Load("user://settings.cfg") == Godot.Error.Ok)
+        {
+            MouseYaw = (bool)cfg.GetValue("controls", "MouseYaw", false);
+            YawSensitivity = (float)cfg.GetValue("controls", "YawSensitivity", 3.0f);
+            RollSensitivity = (float)cfg.GetValue("controls", "RollSensitivity", 3.0f);
+        }
+    }
 
-	private void SetYawSensitivity(float YawSensitivity)
-	{
-		this.YawSensitivity = YawSensitivity;
-		PlaneBody.YawSensitivity = YawSensitivity;
-		SaveSettings();
-	}
+    private void SetMouseYaw(bool MouseYaw)
+    {
+        this.MouseYaw = MouseYaw;
+        PlaneBody.MouseYaw = MouseYaw;
+        SaveSettings();
+    }
 
-	private void SetRollSensitivity(float RollSensitivity)
-	{
-		this.RollSensitivity = RollSensitivity;
-		PlaneBody.RollSensitivity = RollSensitivity;
-		SaveSettings();
-	}
+    private void SetYawSensitivity(float YawSensitivity)
+    {
+        this.YawSensitivity = YawSensitivity;
+        PlaneBody.YawSensitivity = YawSensitivity;
+        SaveSettings();
+    }
 
-	private void SaveSettings()
-	{
-		ConfigFile cfg = new ConfigFile();
+    private void SetRollSensitivity(float RollSensitivity)
+    {
+        this.RollSensitivity = RollSensitivity;
+        PlaneBody.RollSensitivity = RollSensitivity;
+        SaveSettings();
+    }
 
-		cfg.SetValue("controls", "MouseYaw", MouseYaw);
-		cfg.SetValue("controls", "YawSensitivity", YawSensitivity);
-		cfg.SetValue("controls", "RollSensitivity", RollSensitivity);
+    private void SaveSettings()
+    {
+        ConfigFile cfg = new ConfigFile();
 
-		cfg.Save("user://settings.cfg");
-	}
+        cfg.SetValue("controls", "MouseYaw", MouseYaw);
+        cfg.SetValue("controls", "YawSensitivity", YawSensitivity);
+        cfg.SetValue("controls", "RollSensitivity", RollSensitivity);
+
+        cfg.Save("user://settings.cfg");
+    }
+
+    public void ChangeHealth(float changeHealth)
+    {
+        Health += changeHealth;
+        if (Health < 1f)
+        {
+            Spawn();
+        }
+    }
+
+    private void Spawn()
+    {
+        Health = MaxHealth;
+
+        PhysicsServer3D.BodySetState(PlaneBody.GetRid(), PhysicsServer3D.BodyState.Transform, Transform3D.Identity.Translated(StartPosition));
+    }
 }
