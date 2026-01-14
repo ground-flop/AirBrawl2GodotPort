@@ -26,10 +26,15 @@ public partial class PlaneBodyController : RigidBody3D
 
     private float targetSpeed = 0f;
 
+    public delegate void ImpactEventHandler(float ImpactVelocity);
+    public event ImpactEventHandler OnImpactEvent;
+
     public override void _Ready()
     {
         LinearDamp = 2f;
         AngularDamp = 4f;
+        SetContactMonitor(true);
+        MaxContactsReported = 5;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -76,5 +81,21 @@ public partial class PlaneBodyController : RigidBody3D
         AngularVelocity = AngularVelocity.Lerp(targetAngularVelocity, RotationSmooth * (float)delta);
 
         LinearVelocity = forward * newSpeed + new Vector3(0f, -1f, 0f) * 9.81f * Mass;
+    }
+    public override void _IntegrateForces(PhysicsDirectBodyState3D state)
+    {
+            for (int i = 0; i <= state.GetContactCount(); i++)
+            {
+                Vector3 normal = state.GetContactLocalNormal(i);
+
+                float impactSpeed = -state.LinearVelocity.Dot(normal);
+                if (impactSpeed > 0)
+                {
+                    OnImpactEvent?.Invoke(impactSpeed);
+                }
+            }
+        // OnImpactEvent?.Invoke(1);
+
+
     }
 }

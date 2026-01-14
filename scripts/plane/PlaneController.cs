@@ -45,6 +45,8 @@ public partial class PlaneController : Node3D
 
         Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         Health = MaxHealth;
+
+        PlaneBody.OnImpactEvent += OnImpact;
     }
 
     public override void _Process(double delta)
@@ -136,5 +138,11 @@ public partial class PlaneController : Node3D
         Health = MaxHealth;
 
         PhysicsServer3D.BodySetState(PlaneBody.GetRid(), PhysicsServer3D.BodyState.Transform, Transform3D.Identity.Translated(StartPosition));
+    }
+
+    public void OnImpact(float ImpactVelocity)
+    {
+
+        ChangeHealth(-PlaneBody.LinearVelocity.Length());
     }
 }
