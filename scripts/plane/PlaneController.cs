@@ -38,15 +38,11 @@ public partial class PlaneController : Node3D
         LoadSettings();
         GlobalPosition = StartPosition;
 
-        PlaneBody.MaxSpeed = MaxSpeed;
-        PlaneBody.YawSensitivity = YawSensitivity;
-        PlaneBody.RollSensitivity = RollSensitivity;
-        PlaneBody.MouseYaw = MouseYaw;
 
         Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         Health = MaxHealth;
 
-        PlaneBody.OnImpactEvent += OnImpact;
+        InitializePlaneBody();
     }
 
     public override void _Process(double delta)
@@ -137,12 +133,28 @@ public partial class PlaneController : Node3D
     {
         Health = MaxHealth;
 
-        PhysicsServer3D.BodySetState(PlaneBody.GetRid(), PhysicsServer3D.BodyState.Transform, Transform3D.Identity.Translated(StartPosition));
+        PlaneBodyController OldPlane = PlaneBody;
+        Node NewPlane = GD.Load<PackedScene>("Scenes/Plane/PlaneBody.tscn").Instantiate();
+        AddChild(NewPlane);
+        PlaneBody = (PlaneBodyController)NewPlane;
+        CameraTarget = PlaneBody.GetNode<Node3D>("CamInterpolateTo");
+        InitializePlaneBody();
+        OldPlane.QueueFree();
     }
 
     public void OnImpact(float ImpactVelocity)
     {
 
-        ChangeHealth(-PlaneBody.LinearVelocity.Length());
+        ChangeHealth(-PlaneBody.LinearVelocity.Length() * 2);
+    }
+
+    private void InitializePlaneBody()
+    {
+        PlaneBody.MaxSpeed = MaxSpeed;
+        PlaneBody.YawSensitivity = YawSensitivity;
+        PlaneBody.RollSensitivity = RollSensitivity;
+        PlaneBody.MouseYaw = MouseYaw;
+
+        PlaneBody.OnImpactEvent += OnImpact;
     }
 }

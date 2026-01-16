@@ -84,18 +84,15 @@ public partial class PlaneBodyController : RigidBody3D
     }
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
-            for (int i = 0; i <= state.GetContactCount(); i++)
+        for (int i = 0; i < state.GetContactCount(); i++)
+        {
+            Vector3 normal = state.GetContactLocalNormal(i);
+
+            float impactSpeed = -state.LinearVelocity.Dot(normal);
+            if (impactSpeed > 0)
             {
-                Vector3 normal = state.GetContactLocalNormal(i);
-
-                float impactSpeed = -state.LinearVelocity.Dot(normal);
-                if (impactSpeed > 0)
-                {
-                    OnImpactEvent?.Invoke(impactSpeed);
-                }
+                OnImpactEvent?.Invoke(impactSpeed);
             }
-        // OnImpactEvent?.Invoke(1);
-
-
+        }
     }
 }
