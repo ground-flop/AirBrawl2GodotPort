@@ -26,6 +26,7 @@ public partial class PlaneController : Node3D
     float MaxFov = 120.0f;
 
     float Health = 100f;
+    [Export]
     float MaxHealth = 100f;
 
     public override void _Ready()
