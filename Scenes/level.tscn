@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://b4pbvn6udxpbq"]
+[gd_scene load_steps=5 format=3 uid="uid://b4pbvn6udxpbq"]
 
 [ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://materials/shattered mars or something.blend" id="1_k5f4k"]
-[ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/plane.tscn" id="2_6phgx"]
+[ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/Plane/plane.tscn" id="2_6phgx"]
+[ext_resource type="PackedScene" uid="uid://28g6qhhglq6h" path="res://Scenes/Environment/wall.tscn" id="3_6phgx"]
 
 [sub_resource type="Environment" id="Environment_i5arm"]
 volumetric_fog_enabled = true
@@ -19,3 +20,6 @@ environment = SubResource("Environment_i5arm")
 
 [node name="Plane" parent="." instance=ExtResource("2_6phgx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 107.35635, 0)
+
+[node name="Wall" parent="." instance=ExtResource("3_6phgx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.1684875, 107.942215, 55.600513)

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://bv06qm7786v4v"]
+
+[ext_resource type="Script" uid="uid://j3505iai7yuh" path="res://scripts/plane/PlaneController.cs" id="1_b1bhf"]
+[ext_resource type="PackedScene" uid="uid://bj31evgqbr8u1" path="res://Scenes/Plane/PlaneBody.tscn" id="2_e1cjv"]
+
+[node name="Plane" type="Node3D"]
+script = ExtResource("1_b1bhf")
+
+[node name="PlaneCamera" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 10, -20)
+current = true
+
+[node name="PlaneBody" parent="." instance=ExtResource("2_e1cjv")]
+
+[editable path="PlaneBody"]

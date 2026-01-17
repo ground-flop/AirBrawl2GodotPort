@@ -2,76 +2,97 @@ using Godot;
 
 public partial class PlaneBodyController : RigidBody3D
 {
-	// --- SPEED ---
-	 public float MaxSpeed = 250f;
-	 public float Acceleration = 80f;
+    // --- SPEED ---
+    public float MaxSpeed = 250f;
+    public float Acceleration = 80f;
 
-	// --- ROTATION ---
-	 public float PitchRate = 4.0f;
-	 public float YawRate   = 2.0f;         
-	 public float RollRate  = 4.0f;
+    // --- ROTATION ---
+    public float PitchRate = 4.0f;
+    public float YawRate = 2.0f;
+    public float RollRate = 4.0f;
 
-	 public float MaxPitch = 4f;
-	 public float MaxYaw = 4f;
-	 public float MaxRoll = 4f;
+    public float MaxPitch = 4f;
+    public float MaxYaw = 4f;
+    public float MaxRoll = 4f;
 
-	 public bool MouseYaw = false;
+    public bool MouseYaw = false;
 
-	 public float YawSensitivity;
-	 public float RollSensitivity;
+    public float YawSensitivity;
+    public float RollSensitivity;
 
-	// --- SMOOTHING ---
-	 public float RotationSmooth = 6f;
-	 public float SpeedSmooth = 5f;
+    // --- SMOOTHING ---
+    public float RotationSmooth = 6f;
+    public float SpeedSmooth = 5f;
 
-	private float targetSpeed = 0f;
+    private float targetSpeed = 0f;
 
-	public override void _Ready()
-	{
-		LinearDamp = 2f;
-		AngularDamp = 4f;
-	}
+    public delegate void ImpactEventHandler(float ImpactVelocity);
+    public event ImpactEventHandler OnImpactEvent;
 
-	public override void _PhysicsProcess(double delta)
-	{
-		// --- Inputs ---
-		Vector2 mouse = Input.GetLastMouseVelocity() / DisplayServer.ScreenGetSize();
+    public override void _Ready()
+    {
+        LinearDamp = 2f;
+        AngularDamp = 4f;
+        SetContactMonitor(true);
+        MaxContactsReported = 5;
+    }
 
-		float pitch = -mouse.Y * YawSensitivity;
+    public override void _PhysicsProcess(double delta)
+    {
+        // --- Inputs ---
+        Vector2 mouse = Input.GetLastMouseVelocity() / DisplayServer.ScreenGetSize();
 
-		float yaw = 0f;
-		float roll = 0f;
-		if (!MouseYaw) {
-		roll   = mouse.X * RollSensitivity;
-		yaw  = Input.GetActionStrength("A") - Input.GetActionStrength("D");
-		} else {
-		yaw   = -mouse.X;
-		roll  = Input.GetActionStrength("D") - Input.GetActionStrength("A");
-		}
+        float pitch = -mouse.Y * YawSensitivity;
 
-		float throttle = Input.GetActionStrength("W") - Input.GetActionStrength("S");
-		throttle = Mathf.Clamp(throttle, -1f, 1f);
+        float yaw = 0f;
+        float roll = 0f;
+        if (!MouseYaw)
+        {
+            roll = mouse.X * RollSensitivity;
+            yaw = Input.GetActionStrength("A") - Input.GetActionStrength("D");
+        }
+        else
+        {
+            yaw = -mouse.X;
+            roll = Input.GetActionStrength("D") - Input.GetActionStrength("A");
+        }
 
-		targetSpeed += Acceleration * throttle * (float)delta;
-		targetSpeed = Mathf.Clamp(targetSpeed, 0f, MaxSpeed);
+        float throttle = Input.GetActionStrength("W") - Input.GetActionStrength("S");
+        throttle = Mathf.Clamp(throttle, -1f, 1f);
 
-		float currentSpeed = LinearVelocity.Length();
-		float newSpeed = Mathf.Lerp(currentSpeed, targetSpeed, SpeedSmooth * (float)delta);
+        targetSpeed += Acceleration * throttle * (float)delta;
+        targetSpeed = Mathf.Clamp(targetSpeed, 0f, MaxSpeed);
 
-		Basis basis = GlobalTransform.Basis;
-		Vector3 forward = basis.Z;
-		Vector3 right   = basis.X;
-		Vector3 up      = basis.Y;
+        float currentSpeed = LinearVelocity.Length();
+        float newSpeed = Mathf.Lerp(currentSpeed, targetSpeed, SpeedSmooth * (float)delta);
 
-		// targeted angular velocity
-		Vector3 targetAngularVelocity =
-			right   * Mathf.Clamp(-pitch * PitchRate, -MaxPitch, MaxPitch) +
-			up      * Mathf.Clamp(yaw   * YawRate, -MaxYaw, MaxYaw) +
-			forward * Mathf.Clamp(roll  * RollRate, -MaxRoll, MaxRoll);
+        Basis basis = GlobalTransform.Basis;
+        Vector3 forward = basis.Z;
+        Vector3 right = basis.X;
+        Vector3 up = basis.Y;
 
-		// smooth 
-		AngularVelocity = AngularVelocity.Lerp(targetAngularVelocity, RotationSmooth * (float)delta);
+        // targeted angular velocity
+        Vector3 targetAngularVelocity =
+            right * Mathf.Clamp(-pitch * PitchRate, -MaxPitch, MaxPitch) +
+            up * Mathf.Clamp(yaw * YawRate, -MaxYaw, MaxYaw) +
+            forward * Mathf.Clamp(roll * RollRate, -MaxRoll, MaxRoll);
 
-		LinearVelocity = forward * newSpeed + new Vector3 (0f, -1f, 0f) * 9.81f * Mass;
-	}
+        // smooth 
+        AngularVelocity = AngularVelocity.Lerp(targetAngularVelocity, RotationSmooth * (float)delta);
+
+        LinearVelocity = forward * newSpeed + new Vector3(0f, -1f, 0f) * 9.81f * Mass;
+    }
+    public override void _IntegrateForces(PhysicsDirectBodyState3D state)
+    {
+        for (int i = 0; i < state.GetContactCount(); i++)
+        {
+            Vector3 normal = state.GetContactLocalNormal(i);
+
+            float impactSpeed = -state.LinearVelocity.Dot(normal);
+            if (impactSpeed > 0)
+            {
+                OnImpactEvent?.Invoke(impactSpeed);
+            }
+        }
+    }
 }
