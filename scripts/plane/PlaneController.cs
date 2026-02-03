@@ -5,9 +5,13 @@ public partial class PlaneController : Node3D
 {
     Camera3D CameraObject;
     Node3D CameraTarget;
-    PanelContainer Menu;
+    // PanelContainer Menu;
     PlaneBodyController PlaneBody;
+<<<<<<< Updated upstream
     Timer RegenerationTimer;
+=======
+    HudController Hud;
+>>>>>>> Stashed changes
 
     [Export]
     bool SinglePlayer = false;
@@ -38,9 +42,13 @@ public partial class PlaneController : Node3D
     {
         CameraObject = GetNode<Camera3D>("PlaneCamera");
         CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
-        Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
+        // Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
         PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
+<<<<<<< Updated upstream
         RegenerationTimer = GetNode<Timer>("RegenerationTimer");
+=======
+        Hud = GetNode<HudController>("hud");
+>>>>>>> Stashed changes
 
         LoadSettings();
         GlobalPosition = StartPosition;
@@ -57,17 +65,18 @@ public partial class PlaneController : Node3D
     public override void _Process(double delta)
     {
         UpdateCamera(delta);
-        if (Menu.Visible)
-        {
-            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
-            return;
-        }
-        else
-        {
-            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
-        }
+        // if (Menu.Visible)
+        // {
+        //     Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
+        //     return;
+        // }
+        // else
+        // {
+        //     Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+        // }
 
         UpdateFov();
+        UpdateHud();
     }
 
     private void UpdateCamera(double delta)
@@ -163,7 +172,8 @@ public partial class PlaneController : Node3D
     public void OnImpact(float ImpactVelocity)
     {
 
-        ChangeHealth(-PlaneBody.LinearVelocity.Length() * 2);
+        ChangeHealth(-PlaneBody.LinearVelocity.Length());
+        UpdateHud();
     }
 
     private void InitializePlaneBody()
@@ -174,5 +184,11 @@ public partial class PlaneController : Node3D
         PlaneBody.MouseYaw = MouseYaw;
 
         PlaneBody.OnImpactEvent += OnImpact;
+    }
+
+    private void UpdateHud()
+    {
+        Hud.SetSpeed((PlaneBody.GlobalTransform.Basis.Inverse() * PlaneBody.LinearVelocity).Z);
+        Hud.SetHealth(Health);
     }
 }
