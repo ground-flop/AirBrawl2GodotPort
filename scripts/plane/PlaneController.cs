@@ -7,11 +7,8 @@ public partial class PlaneController : Node3D
     Node3D CameraTarget;
     // PanelContainer Menu;
     PlaneBodyController PlaneBody;
-<<<<<<< Updated upstream
     Timer RegenerationTimer;
-=======
     HudController Hud;
->>>>>>> Stashed changes
 
     [Export]
     bool SinglePlayer = false;
@@ -44,11 +41,8 @@ public partial class PlaneController : Node3D
         CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
         // Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
         PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
-<<<<<<< Updated upstream
         RegenerationTimer = GetNode<Timer>("RegenerationTimer");
-=======
         Hud = GetNode<HudController>("hud");
->>>>>>> Stashed changes
 
         LoadSettings();
         GlobalPosition = StartPosition;
