@@ -7,6 +7,7 @@ public partial class PlaneController : Node3D
     Node3D CameraTarget;
     PanelContainer Menu;
     PlaneBodyController PlaneBody;
+    Timer RegenerationTimer;
 
     [Export]
     bool SinglePlayer = false;
@@ -24,6 +25,10 @@ public partial class PlaneController : Node3D
     float MinFov = 60.0f;
     [Export]
     float MaxFov = 120.0f;
+    [Export]
+    float RegenerationRequirementTime = 1f;
+    [Export]
+    float RegenerationDuration = 1.5f;
 
     float Health = 100f;
     [Export]
@@ -35,6 +40,7 @@ public partial class PlaneController : Node3D
         CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
         Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
         PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
+        RegenerationTimer = GetNode<Timer>("RegenerationTimer");
 
         LoadSettings();
         GlobalPosition = StartPosition;
@@ -42,6 +48,8 @@ public partial class PlaneController : Node3D
 
         Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         Health = MaxHealth;
+        RegenerationTimer.WaitTime = RegenerationRequirementTime;
+        RegenerationTimer.OneShot = true;
 
         InitializePlaneBody();
     }
@@ -127,7 +135,16 @@ public partial class PlaneController : Node3D
         if (Health < 1f)
         {
             Spawn();
+            RegenerationTimer.Stop();
+        } else {
+            RegenerationTimer.Start();
         }
+    }
+
+    private void RegenerateHealth() {
+
+        Tween MyTween = GetTree().CreateTween();
+        MyTween.TweenProperty(this, "Health", MaxHealth, RegenerationDuration);
     }
 
     private void Spawn()
