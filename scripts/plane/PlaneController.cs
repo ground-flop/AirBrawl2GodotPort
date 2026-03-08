@@ -66,7 +66,7 @@ public partial class PlaneController : Node3D
         // }
         // else
         // {
-        //     Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+             Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         // }
 
         UpdateFov();
