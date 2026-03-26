@@ -6,6 +6,7 @@
 
 [node name="Plane" type="Node3D" unique_id=949122836]
 script = ExtResource("1_ohuft")
+StartPosition = Vector3(0, 0, 0)
 
 [node name="PlaneCamera" type="Camera3D" parent="." unique_id=1185932024]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 10, -20)
@@ -15,6 +16,6 @@ current = true
 
 [node name="RegenerationTimer" type="Timer" parent="." unique_id=1806081399]
 
-[connection signal="timeout" from="RegenerationTimer" to="." method="RegenerateHealth"]
+[node name="hud" parent="." unique_id=2007686708 instance=ExtResource("3_ohuft")]
 
-[node name="hud" parent="." instance=ExtResource("3_ohuft")]
+[connection signal="timeout" from="RegenerationTimer" to="." method="RegenerateHealth"]
