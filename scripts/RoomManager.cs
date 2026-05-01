@@ -29,7 +29,11 @@ public partial class RoomManager : Node
     {
         var roomId = await signaling.CreateRoom();
         room = new Room();
-        CallDeferred(Node.MethodName.AddChild, room);
+        AddChild(room);
+
+        var multiplayer = new WebRtcMultiplayerPeer();
+        multiplayer.CreateMesh(1);
+        Multiplayer.MultiplayerPeer = multiplayer;
 
         return roomId;
     }
@@ -38,16 +42,47 @@ public partial class RoomManager : Node
     {
         var peerId = await signaling.JoinRoom(roomId);
         room = new Room();
-        CallDeferred(Node.MethodName.AddChild, room);
+        AddChild(room);
 
-        // TODO: Connects other players
+        var multiplayer = new WebRtcMultiplayerPeer();
+        multiplayer.CreateMesh(peerId);
+        Multiplayer.MultiplayerPeer = multiplayer;
+
+        // Connect players
+        var playersConnectionInfo = await signaling.GetConnectionInfo();
+        var tasks =
+            playersConnectionInfo.PlayersConnectionInfo
+                .Select(async connInfo =>
+                {
+                    var peer = new PeerConnection();
+                    multiplayer.AddPeer(peer, connInfo.PeerId);
+                    await peer.AnswerConnectionOffer(signaling, connInfo.ConnectionAttemptId); // This return only when peer is actually connected
+                })
+                .ToArray();
+
+        await Task.WhenAll(tasks);
+        GD.Print("Connected");
     }
 
     public async Task QuitRoom()
     {
         if (room is null) return;
+        if (Multiplayer.MultiplayerPeer is not WebRtcMultiplayerPeer multiplayer)
+        {
+            GD.PrintErr("Leaving a room without being connected to a room.");
+            return;
+        }
 
-        // TODO: Disconnect players
+        // Disconnect from all peers
+        foreach (var peer in multiplayer.GetPeers())
+        {
+            var peerId = peer.Key.As<int>();
+            multiplayer.DisconnectPeer(peerId);
+        }
+
+        // Close the multiplayer
+        multiplayer.Close();
+        Multiplayer.MultiplayerPeer = null;
 
         try
         {
