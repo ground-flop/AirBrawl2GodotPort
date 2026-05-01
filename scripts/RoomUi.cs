@@ -1,4 +1,3 @@
-using AirBrawl2.Networking;
 using AirBrawl2.Networking.FSharpInterop;
 using Godot;
 using SignalingServer.Signaling;
@@ -12,9 +11,6 @@ public partial class RoomUi : Node
     private Control loadingRoomUi = null!;
     private Control quitRoomUi = null!;
 
-    private readonly Signaling signaling = new();
-    private Room? room;
-
     public override void _EnterTree()
     {
         joinRoomUi = GetNode<Control>("./JoinRoom");
@@ -25,14 +21,12 @@ public partial class RoomUi : Node
         quitRoomUi.Hide();
         loadingRoomUi.Show();
 
-        var multiplayer = Multiplayer;
-        Task.Run(async () =>
+        RoomManager.Instance.RoomManagerReady += () =>
         {
-            await signaling.ConnectSignalingServer(multiplayer);
             loadingRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
             quitRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
             joinRoomUi.CallDeferred(CanvasItem.MethodName.Show);
-        });
+        };
     }
 
     private void ResetUi()
@@ -50,12 +44,7 @@ public partial class RoomUi : Node
             joinRoomUi.Hide();
             loadingRoomUi.Show();
 
-            var roomId = await signaling.CreateRoom();
-
-            GD.Print($"Room id is {roomId}");
-            GD.Print("Connected as 1");
-            room = new Room();
-            CallDeferred(Node.MethodName.AddChild, room);
+            var roomId = await RoomManager.Instance.CreateRoom();
 
             // Set joined
             ((Label)quitRoomUi.FindChild("RoomId")).Text = roomId.ToString();
@@ -91,13 +80,7 @@ public partial class RoomUi : Node
             joinRoomUi.Hide();
             loadingRoomUi.Show();
 
-            // Join room
-            var peerId = await signaling.JoinRoom(roomId);
-            room = new Room();
-            CallDeferred(Node.MethodName.AddChild, room);
-            GD.Print($"Connected as {peerId}");
-
-            // TODO: Connects other players
+            await RoomManager.Instance.JoinRoom(roomId);
 
             // Set joined
             quitRoomUi.GetNode<Label>("./RoomId").Text = roomId.ToString();
@@ -115,20 +98,18 @@ public partial class RoomUi : Node
     {
         try
         {
-            if (room is null) return;
-
             // Set loading
             quitRoomUi.Hide();
             loadingRoomUi.Show();
 
-            // TODO: Disconnect players
-            await signaling.LeaveRoom();
-
-            ResetUi();
+            await RoomManager.Instance.QuitRoom();
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            GD.PrintErr("Failed to leave room: ", e);
+            // ignore
+        }
+        finally
+        {
             ResetUi();
         }
     }

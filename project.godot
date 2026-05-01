@@ -19,6 +19,10 @@ run/main_scene="uid://b4pbvn6udxpbq"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+RoomManager="*uid://ctv570tyv480e"
+
 [dotnet]
 
 project/assembly_name="Air Brawl 2"
