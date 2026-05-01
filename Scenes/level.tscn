@@ -1,25 +1,89 @@
-[gd_scene load_steps=5 format=3 uid="uid://b4pbvn6udxpbq"]
+[gd_scene format=3 uid="uid://b4pbvn6udxpbq"]
 
 [ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://materials/shattered mars or something.blend" id="1_k5f4k"]
 [ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/Plane/plane.tscn" id="2_6phgx"]
 [ext_resource type="PackedScene" uid="uid://28g6qhhglq6h" path="res://Scenes/Environment/wall.tscn" id="3_6phgx"]
+[ext_resource type="Script" uid="uid://4qluvb3mlgbq" path="res://scripts/RoomUi.cs" id="4_81xng"]
 
 [sub_resource type="Environment" id="Environment_i5arm"]
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.01
 
-[node name="Node3D" type="Node3D"]
+[node name="Node3D" type="Node3D" unique_id=2032731622]
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1698531025]
 
-[node name="shattered mars or something" parent="." instance=ExtResource("1_k5f4k")]
+[node name="shattered mars or something" parent="." unique_id=961803587 instance=ExtResource("1_k5f4k")]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=732051643]
 environment = SubResource("Environment_i5arm")
 
-[node name="Plane" parent="." instance=ExtResource("2_6phgx")]
+[node name="Plane" parent="." unique_id=883363131 instance=ExtResource("2_6phgx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 107.35635, 0)
 
-[node name="Wall" parent="." instance=ExtResource("3_6phgx")]
+[node name="Wall" parent="." unique_id=1170968097 instance=ExtResource("3_6phgx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.1684875, 107.942215, 55.600513)
+
+[node name="UI" type="MarginContainer" parent="." unique_id=22383333]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+script = ExtResource("4_81xng")
+
+[node name="JoinRoom" type="HBoxContainer" parent="UI" unique_id=395856686]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="Join" type="HBoxContainer" parent="UI/JoinRoom" unique_id=584331100]
+layout_mode = 2
+
+[node name="RoomId" type="LineEdit" parent="UI/JoinRoom/Join" unique_id=1712247348]
+layout_mode = 2
+placeholder_text = "Room code"
+expand_to_text_length = true
+
+[node name="Button" type="Button" parent="UI/JoinRoom/Join" unique_id=911473936]
+layout_mode = 2
+text = "Join"
+
+[node name="Create" type="Button" parent="UI/JoinRoom" unique_id=711934595]
+layout_mode = 2
+text = "Create"
+
+[node name="QuitRoom" type="HBoxContainer" parent="UI" unique_id=471602713]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+[node name="RoomId" type="Label" parent="UI/QuitRoom" unique_id=1983374941]
+layout_mode = 2
+text = "abcd"
+
+[node name="Button" type="Button" parent="UI/QuitRoom" unique_id=1367746461]
+layout_mode = 2
+text = "Quit"
+
+[node name="LoadingRoom" type="HBoxContainer" parent="UI" unique_id=1499638912]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+[node name="Label" type="Label" parent="UI/LoadingRoom" unique_id=1343554076]
+layout_mode = 2
+text = "Loading..."
+
+[connection signal="text_submitted" from="UI/JoinRoom/Join/RoomId" to="UI" method="RoomIdSubmitted"]
+[connection signal="pressed" from="UI/JoinRoom/Join/Button" to="UI" method="JoinRoom"]
+[connection signal="pressed" from="UI/JoinRoom/Create" to="UI" method="CreateRoom"]
+[connection signal="pressed" from="UI/QuitRoom/Button" to="UI" method="QuitRoom"]

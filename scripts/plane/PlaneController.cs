@@ -1,4 +1,3 @@
-using System;
 using Godot;
 
 public partial class PlaneController : Node3D
@@ -7,7 +6,7 @@ public partial class PlaneController : Node3D
     Node3D CameraTarget;
     PanelContainer Menu;
     PlaneBodyController PlaneBody;
-    Timer RegenerationTimer;
+    Godot.Timer RegenerationTimer;
 
     [Export]
     bool SinglePlayer = false;
@@ -40,13 +39,13 @@ public partial class PlaneController : Node3D
         CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
         Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
         PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
-        RegenerationTimer = GetNode<Timer>("RegenerationTimer");
+        RegenerationTimer = GetNode<Godot.Timer>("RegenerationTimer");
 
         LoadSettings();
         GlobalPosition = StartPosition;
 
 
-        Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+        // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         Health = MaxHealth;
         RegenerationTimer.WaitTime = RegenerationRequirementTime;
         RegenerationTimer.OneShot = true;
@@ -59,12 +58,12 @@ public partial class PlaneController : Node3D
         UpdateCamera(delta);
         if (Menu.Visible)
         {
-            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
+            // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
             return;
         }
         else
         {
-            Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
+            // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         }
 
         UpdateFov();
