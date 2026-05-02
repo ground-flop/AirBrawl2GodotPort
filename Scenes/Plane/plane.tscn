@@ -3,16 +3,29 @@
 [ext_resource type="Script" uid="uid://j3505iai7yuh" path="res://scripts/plane/PlaneController.cs" id="1_b1bhf"]
 [ext_resource type="PackedScene" uid="uid://bj31evgqbr8u1" path="res://Scenes/Plane/PlaneBody.tscn" id="2_e1cjv"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_e1cjv"]
+properties/0/path = NodePath("PlaneBody:linear_velocity")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("PlaneBody:position")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("PlaneBody:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+
 [node name="Plane" type="Node3D" unique_id=949122836]
 script = ExtResource("1_b1bhf")
 
 [node name="PlaneCamera" type="Camera3D" parent="." unique_id=1185932024]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 10, -20)
-current = true
 
 [node name="PlaneBody" parent="." unique_id=1872862714 instance=ExtResource("2_e1cjv")]
 
 [node name="RegenerationTimer" type="Timer" parent="." unique_id=1806081399]
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=452764484]
+replication_config = SubResource("SceneReplicationConfig_e1cjv")
 
 [connection signal="timeout" from="RegenerationTimer" to="." method="RegenerateHealth"]
 

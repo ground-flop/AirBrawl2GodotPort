@@ -33,8 +33,18 @@ public partial class PlaneController : Node3D
     [Export]
     float MaxHealth = 100f;
 
+    public override void _EnterTree() => SetMultiplayerAuthority(int.Parse(Name));
+
     public override void _Ready()
     {
+        GlobalPosition = StartPosition;
+        if (!IsMultiplayerAuthority())
+        {
+            SetProcess(false);
+            SetPhysicsProcess(false);
+            return;
+        }
+
         CameraObject = GetNode<Camera3D>("PlaneCamera");
         CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
         Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
@@ -42,13 +52,13 @@ public partial class PlaneController : Node3D
         RegenerationTimer = GetNode<Godot.Timer>("RegenerationTimer");
 
         LoadSettings();
-        GlobalPosition = StartPosition;
-
 
         // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
         Health = MaxHealth;
         RegenerationTimer.WaitTime = RegenerationRequirementTime;
         RegenerationTimer.OneShot = true;
+
+        CameraObject.MakeCurrent();
 
         InitializePlaneBody();
     }

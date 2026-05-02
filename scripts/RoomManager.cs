@@ -61,7 +61,6 @@ public partial class RoomManager : Node
                 .ToArray();
 
         await Task.WhenAll(tasks);
-        GD.Print("Connected");
     }
 
     public async Task QuitRoom()

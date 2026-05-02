@@ -4,9 +4,16 @@
 [ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/Plane/plane.tscn" id="2_6phgx"]
 [ext_resource type="PackedScene" uid="uid://28g6qhhglq6h" path="res://Scenes/Environment/wall.tscn" id="3_6phgx"]
 [ext_resource type="Script" uid="uid://4qluvb3mlgbq" path="res://scripts/RoomUi.cs" id="4_81xng"]
+[ext_resource type="Script" uid="uid://br666m5rrjq4g" path="res://scripts/PlaneSpawner.cs" id="4_wqkje"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wqkje"]
+
+[sub_resource type="Sky" id="Sky_0f350"]
+sky_material = SubResource("ProceduralSkyMaterial_wqkje")
 
 [sub_resource type="Environment" id="Environment_i5arm"]
-volumetric_fog_enabled = true
+background_mode = 2
+sky = SubResource("Sky_0f350")
 volumetric_fog_density = 0.01
 
 [node name="Node3D" type="Node3D" unique_id=2032731622]
@@ -18,9 +25,6 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=732051643]
 environment = SubResource("Environment_i5arm")
-
-[node name="Plane" parent="." unique_id=883363131 instance=ExtResource("2_6phgx")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 107.35635, 0)
 
 [node name="Wall" parent="." unique_id=1170968097 instance=ExtResource("3_6phgx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.1684875, 107.942215, 55.600513)
@@ -82,6 +86,14 @@ size_flags_vertical = 0
 [node name="Label" type="Label" parent="UI/LoadingRoom" unique_id=1343554076]
 layout_mode = 2
 text = "Loading..."
+
+[node name="Planes" type="Node3D" parent="." unique_id=840340409]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=570553228]
+_spawnable_scenes = PackedStringArray("uid://bv06qm7786v4v")
+spawn_path = NodePath("../Planes")
+script = ExtResource("4_wqkje")
+planeScene = ExtResource("2_6phgx")
 
 [connection signal="text_submitted" from="UI/JoinRoom/Join/RoomId" to="UI" method="RoomIdSubmitted"]
 [connection signal="pressed" from="UI/JoinRoom/Join/Button" to="UI" method="JoinRoom"]

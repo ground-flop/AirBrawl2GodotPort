@@ -214,14 +214,14 @@ public class GodotLogger : ILogger
                 GD.PrintS("WARNING: ", s2);
                 GD.PushWarning(s2);
                 break;
-            case LogLevel.Debug:
-            case LogLevel.Information:
-            case LogLevel.Trace:
-            case LogLevel.None:
-                GD.PrintS(formatter.Invoke(state, exception));
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
+            // case LogLevel.Debug:
+            // case LogLevel.Information:
+            // case LogLevel.Trace:
+            // case LogLevel.None:
+            //     GD.PrintS(formatter.Invoke(state, exception));
+            //     break;
+            // default:
+            //     throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
         }
     }
 }
