@@ -74,7 +74,7 @@ public partial class PeerConnection : WebRtcPeerConnection
             sub1.Dispose();
             sub2.Dispose();
 
-            GD.Print("Connection established.");
+            // GD.Print("Connection established.");
             connAttempt.End();
         };
 

@@ -1,8 +1,7 @@
-using AirBrawl2.Networking;
 using Godot;
 using SignalingServer.Signaling;
 
-namespace AirBrawl2.scripts;
+namespace AirBrawl2.Networking;
 
 public partial class RoomManager : Node
 {
@@ -28,7 +27,7 @@ public partial class RoomManager : Node
     public async Task<RoomId> CreateRoom()
     {
         var roomId = await signaling.CreateRoom();
-        room = new Room();
+        room = new Room(roomId, 1);
         AddChild(room);
 
         var multiplayer = new WebRtcMultiplayerPeer();
@@ -41,7 +40,7 @@ public partial class RoomManager : Node
     public async Task JoinRoom(RoomId roomId)
     {
         var peerId = await signaling.JoinRoom(roomId);
-        room = new Room();
+        room = new Room(roomId, peerId);
         AddChild(room);
 
         var multiplayer = new WebRtcMultiplayerPeer();

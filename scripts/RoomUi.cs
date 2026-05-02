@@ -1,3 +1,4 @@
+using AirBrawl2.Networking;
 using AirBrawl2.Networking.FSharpInterop;
 using Godot;
 using SignalingServer.Signaling;
@@ -51,10 +52,6 @@ public partial class RoomUi : Node
             loadingRoomUi.Hide();
             quitRoomUi.Show();
             DisplayServer.ClipboardSet(roomId.ToString());
-
-            // Spawn player
-            var spawner = GetNode<PlaneSpawner>("/root/Node3D/MultiplayerSpawner");
-            spawner.CallDeferred(PlaneSpawner.MethodName.SpawnPlane);
         }
         catch (Exception e)
         {
@@ -91,10 +88,6 @@ public partial class RoomUi : Node
             quitRoomUi.GetNode<Label>("./RoomId").Text = roomId.ToString();
             loadingRoomUi.Hide();
             quitRoomUi.Show();
-
-            // Spawn player
-            var spawner = GetNode<PlaneSpawner>("/root/Node3D/MultiplayerSpawner");
-            spawner.SpawnPlane();
         }
         catch (Exception e)
         {
