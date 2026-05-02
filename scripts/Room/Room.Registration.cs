@@ -15,8 +15,8 @@ public partial class Room
 {
     public override void _EnterTree()
     {
-        Multiplayer.PeerConnected += MultiplayerOnPeerConnected; // Register with future players
-        Multiplayer.PeerDisconnected += MultiplayerOnPeerDisconnected;
+        Multiplayer.MultiplayerPeer.PeerConnected += MultiplayerOnPeerConnected; // Register with future players
+        Multiplayer.MultiplayerPeer.PeerDisconnected += MultiplayerOnPeerDisconnected; // TODO: Remove handlers when disconnected
 
         // Register with already connected players
         Rpc(nameof(RegisterPlayerRpc), LocalPlayer.PeerId, LocalPlayer.Name);
@@ -24,14 +24,18 @@ public partial class Room
 
     private void MultiplayerOnPeerDisconnected(long id)
     {
+        GD.Print($"MultiplayerOnPeerDisconnected {(int)id}");
         if (!Players.TryGetValue((int)id, out var player)) return;
         playerLeft.OnNext(player);
+        Players.Remove(player.PeerId);
     }
 
     private void MultiplayerOnPeerConnected(long id)
     {
         RpcId(id, nameof(RegisterPlayerRpc), LocalPlayer.PeerId, LocalPlayer.Name);
-        if (Players.Keys.Min() == Multiplayer.GetUniqueId())
+
+        if (Players.Count == 0) return;
+        if (Multiplayer.GetUniqueId() == Players.Keys.Min())
             Task.Run(async () =>
             {
                 var roomConfig = await RoomConfig;
@@ -53,11 +57,11 @@ public partial class Room
         GD.Print($"Registered player {name}");
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
     private void SendRoomConfigurationRpc(long utcStartDateTime)
     {
         var startTime = DateTime.FromBinary(utcStartDateTime);
         var config = new RoomConfiguration(startTime);
-        roomConfigTcs.SetResult(config);
+        roomConfigTcs.TrySetResult(config);
     }
 }

@@ -5,36 +5,39 @@ using SignalingServer.Signaling;
 
 namespace AirBrawl2.scripts;
 
+[SceneTree("../Scenes/level.tscn", root: "nodes")]
 public partial class RoomUi : Node
 {
-    // TODO: Use a source generator
-    private Control joinRoomUi = null!;
-    private Control loadingRoomUi = null!;
-    private Control quitRoomUi = null!;
+    private Control ConnectRoomUi => nodes.UI.Margin.Connect;
+    private LineEdit RoomIdLineEdit => nodes.UI.Margin.Connect.Join.RoomId;
+
+    private Control LoadingRoomUi => nodes.UI.Margin.Loading;
+
+    private Control QuitRoomUi => nodes.UI.Margin.QuitRoom;
+    private Label RoomIdLabel => nodes.UI.Margin.QuitRoom.RoomId;
+    private Control PlayersListUi => nodes.UI.Margin.Players;
 
     public override void _EnterTree()
     {
-        joinRoomUi = GetNode<Control>("./JoinRoom");
-        loadingRoomUi = GetNode<Control>("./LoadingRoom");
-        quitRoomUi = GetNode<Control>("./QuitRoom");
-
-        joinRoomUi.Hide();
-        quitRoomUi.Hide();
-        loadingRoomUi.Show();
+        ConnectRoomUi.Hide();
+        QuitRoomUi.Hide();
+        LoadingRoomUi.Show();
+        PlayersListUi.Hide();
 
         RoomManager.Instance.RoomManagerReady += () =>
         {
-            loadingRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
-            quitRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
-            joinRoomUi.CallDeferred(CanvasItem.MethodName.Show);
+            LoadingRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
+            QuitRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
+            ConnectRoomUi.CallDeferred(CanvasItem.MethodName.Show);
         };
     }
 
     private void ResetUi()
     {
-        joinRoomUi.Show();
-        quitRoomUi.Hide();
-        loadingRoomUi.Hide();
+        ConnectRoomUi.Show();
+        QuitRoomUi.Hide();
+        LoadingRoomUi.Hide();
+        PlayersListUi.Hide();
     }
 
     private async void CreateRoom()
@@ -42,16 +45,18 @@ public partial class RoomUi : Node
         try
         {
             // Set loading
-            joinRoomUi.Hide();
-            loadingRoomUi.Show();
+            ConnectRoomUi.Hide();
+            LoadingRoomUi.Show();
 
-            var roomId = await RoomManager.Instance.CreateRoom();
+            var room = await RoomManager.Instance.CreateRoom();
 
             // Set joined
-            ((Label)quitRoomUi.FindChild("RoomId")).Text = roomId.ToString();
-            loadingRoomUi.Hide();
-            quitRoomUi.Show();
-            DisplayServer.ClipboardSet(roomId.ToString());
+            RoomIdLabel.Text = room.RoomId.ToString();
+            LoadingRoomUi.Hide();
+            QuitRoomUi.Show();
+            PlayersListUi.Show();
+            BindRoomToPlayerList(room);
+            DisplayServer.ClipboardSet(room.RoomId.ToString()); // Copy room id to clipboard
         }
         catch (Exception e)
         {
@@ -64,14 +69,7 @@ public partial class RoomUi : Node
     {
         try
         {
-            var lineEdit = joinRoomUi.GetNode<LineEdit>("./Join/RoomId");
-            if (lineEdit is null)
-            {
-                GD.PrintErr("Cannot find child line edit for room id");
-                return;
-            }
-
-            var roomId = RoomId.tryParse(lineEdit.Text).ToNullable();
+            var roomId = RoomId.tryParse(RoomIdLineEdit.Text).ToNullable();
             if (roomId is null)
             {
                 GD.PrintErr("Invalid room id");
@@ -79,15 +77,18 @@ public partial class RoomUi : Node
             }
 
             // Set loading
-            joinRoomUi.Hide();
-            loadingRoomUi.Show();
+            ConnectRoomUi.Hide();
+            LoadingRoomUi.Show();
 
-            await RoomManager.Instance.JoinRoom(roomId);
+            var room = await RoomManager.Instance.JoinRoom(roomId);
 
             // Set joined
-            quitRoomUi.GetNode<Label>("./RoomId").Text = roomId.ToString();
-            loadingRoomUi.Hide();
-            quitRoomUi.Show();
+            RoomIdLineEdit.Clear();
+            RoomIdLabel.Text = roomId.ToString();
+            LoadingRoomUi.Hide();
+            QuitRoomUi.Show();
+            PlayersListUi.Show();
+            BindRoomToPlayerList(room);
         }
         catch (Exception e)
         {
@@ -96,13 +97,30 @@ public partial class RoomUi : Node
         }
     }
 
+    private void BindRoomToPlayerList(Room room)
+    {
+        room.PlayerJoined.Subscribe(AddPlayerToUi);
+        foreach (var playersValue in room.Players.Values) AddPlayerToUi(playersValue);
+
+        room.PlayerLeft.Subscribe(player => PlayersListUi
+            .GetNodeOrNull(player.PeerId.ToString())
+            ?.QueueFree()
+        );
+
+        return;
+        void AddPlayerToUi(Player newPlayer) => PlayersListUi.AddChild(new Label { Name = newPlayer.PeerId.ToString(), Text = newPlayer.Name });
+    }
+
     private async void QuitRoom()
     {
         try
         {
             // Set loading
-            quitRoomUi.Hide();
-            loadingRoomUi.Show();
+            QuitRoomUi.Hide();
+            LoadingRoomUi.Show();
+            PlayersListUi.Hide();
+            foreach (var child in PlayersListUi.GetChildren())
+                if (child is Label) child.QueueFree();
 
             await RoomManager.Instance.QuitRoom();
         }

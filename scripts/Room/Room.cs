@@ -34,4 +34,14 @@ public partial class Room : Node
 
     [Obsolete("Use the constructor with parameters")]
     public Room() => throw new Exception("Room should not be instantiated with the parameterless constructor");
+
+    public void Quit()
+    {
+        roomConfigTcs.TrySetCanceled();
+        playerJoined.OnCompleted();
+        playerLeft.OnCompleted();
+
+        playerJoined.Dispose();
+        playerLeft.Dispose();
+    }
 }

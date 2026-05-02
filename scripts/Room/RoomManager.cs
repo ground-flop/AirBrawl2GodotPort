@@ -24,28 +24,30 @@ public partial class RoomManager : Node
         });
     }
 
-    public async Task<RoomId> CreateRoom()
+    public async Task<Room> CreateRoom()
     {
         var roomId = await signaling.CreateRoom();
-        room = new Room(roomId, 1);
-        AddChild(room);
 
         var multiplayer = new WebRtcMultiplayerPeer();
         multiplayer.CreateMesh(1);
         Multiplayer.MultiplayerPeer = multiplayer;
 
-        return roomId;
+        room = new Room(roomId, 1);
+        AddChild(room);
+
+        return room;
     }
 
-    public async Task JoinRoom(RoomId roomId)
+    public async Task<Room> JoinRoom(RoomId roomId)
     {
         var peerId = await signaling.JoinRoom(roomId);
-        room = new Room(roomId, peerId);
-        AddChild(room);
 
         var multiplayer = new WebRtcMultiplayerPeer();
         multiplayer.CreateMesh(peerId);
         Multiplayer.MultiplayerPeer = multiplayer;
+
+        room = new Room(roomId, peerId);
+        AddChild(room);
 
         // Connect players
         var playersConnectionInfo = await signaling.GetConnectionInfo();
@@ -60,11 +62,15 @@ public partial class RoomManager : Node
                 .ToArray();
 
         await Task.WhenAll(tasks);
+        return room;
     }
 
     public async Task QuitRoom()
     {
         if (room is null) return;
+        room.Quit();
+        room.QueueFree();
+
         if (Multiplayer.MultiplayerPeer is not WebRtcMultiplayerPeer multiplayer)
         {
             GD.PrintErr("Leaving a room without being connected to a room.");
@@ -76,6 +82,7 @@ public partial class RoomManager : Node
         {
             var peerId = peer.Key.As<int>();
             multiplayer.DisconnectPeer(peerId);
+            GD.Print($"Disconnected {peerId}");
         }
 
         // Close the multiplayer
