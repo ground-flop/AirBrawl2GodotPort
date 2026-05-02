@@ -11,7 +11,8 @@ public partial class Room : Node
     public readonly RoomId RoomId;
     public readonly Player LocalPlayer;
     private readonly TaskCompletionSource<RoomConfiguration> roomConfigTcs = new();
-    public Task<RoomConfiguration> RoomConfig => roomConfigTcs.Task;
+    public Task<RoomConfiguration> RoomConfigTask => roomConfigTcs.Task;
+    public RoomConfiguration? RoomConfig;
 
     public readonly Dictionary<int, Player> Players = new();
     private readonly Subject<Player> playerJoined = new();
@@ -26,10 +27,11 @@ public partial class Room : Node
         RoomId = roomId;
         LocalPlayer = new Player(peerId, $"Player {peerId}");
 
-        if (peerId == 1)
-            roomConfigTcs.SetResult(new RoomConfiguration(
-                DateTime.UtcNow + TimeSpan.FromSeconds(10)
-            ));
+        if (peerId != 1) return;
+        RoomConfig = new RoomConfiguration(
+            DateTime.UtcNow + TimeSpan.FromSeconds(10)
+        );
+        roomConfigTcs.SetResult(RoomConfig);
     }
 
     [Obsolete("Use the constructor with parameters")]

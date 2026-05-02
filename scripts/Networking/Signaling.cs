@@ -64,6 +64,7 @@ public class Signaling
     private HubConnection connection = null!;
     private ISignalingHub hub = null!;
     private HubReceiver receiver = null!;
+    public bool Connected;
 
     /// <summary>
     /// Receive messages from signaling hub and populate connection attempts
@@ -94,11 +95,11 @@ public class Signaling
         }
     }
 
-    public Task ConnectSignalingServer(MultiplayerApi multiplayer)
+    public async Task ConnectSignalingServer(MultiplayerApi multiplayer)
     {
         connection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5001/webrtc-signaling")
-            .WithAutomaticReconnect()
+            // TODO: Make sure it works .WithAutomaticReconnect()
             .ConfigureLogging(builder => builder.AddProvider(new GodotLoggingProvider()))
             .AddJsonProtocol(options =>
             {
@@ -109,7 +110,17 @@ public class Signaling
             })
             .Build();
 
-        connection.Closed += _ => Task.Run(() => GD.PrintErr("SignalR connection closed"));
+        connection.Reconnected += _ =>
+        {
+            Connected = true;
+            return Task.CompletedTask;
+        };
+        connection.Closed += _ =>
+        {
+            Connected = false;
+            GD.PrintErr("SignalR connection closed");
+            return Task.CompletedTask;
+        };
 
         // Creating typed hub
         hub = connection.CreateHubProxy<ISignalingHub>();
@@ -119,7 +130,8 @@ public class Signaling
         connection.Register<ISignalingClient>(receiver);
 
         // Starting the connection
-        return connection.StartAsync();
+        await connection.StartAsync();
+        Connected = true;
     }
 
     public async Task<OffererConnectionAttempt> StartConnectionAttempt(SdpDescription offer)

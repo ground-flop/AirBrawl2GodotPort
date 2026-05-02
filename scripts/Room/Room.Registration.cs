@@ -16,52 +16,51 @@ public partial class Room
     public override void _EnterTree()
     {
         Multiplayer.MultiplayerPeer.PeerConnected += MultiplayerOnPeerConnected; // Register with future players
-        Multiplayer.MultiplayerPeer.PeerDisconnected += MultiplayerOnPeerDisconnected; // TODO: Remove handlers when disconnected
+        Multiplayer.MultiplayerPeer.PeerDisconnected += MultiplayerOnPeerDisconnected;
 
         // Register with already connected players
-        Rpc(nameof(RegisterPlayerRpc), LocalPlayer.PeerId, LocalPlayer.Name);
+        RegisterPlayerRpc(LocalPlayer.PeerId, LocalPlayer.Name);
     }
 
     private void MultiplayerOnPeerDisconnected(long id)
     {
-        GD.Print($"MultiplayerOnPeerDisconnected {(int)id}");
         if (!Players.TryGetValue((int)id, out var player)) return;
         playerLeft.OnNext(player);
         Players.Remove(player.PeerId);
     }
 
-    private void MultiplayerOnPeerConnected(long id)
-    {
-        RpcId(id, nameof(RegisterPlayerRpc), LocalPlayer.PeerId, LocalPlayer.Name);
+    private void MultiplayerOnPeerConnected(long id) =>
+        RegisterPlayerRpcId(id, LocalPlayer.PeerId, LocalPlayer.Name);
 
-        if (Players.Count == 0) return;
-        if (Multiplayer.GetUniqueId() == Players.Keys.Min())
-            Task.Run(async () =>
-            {
-                var roomConfig = await RoomConfig;
-                CallDeferred(Node.MethodName.RpcId,
-                    id,
-                    nameof(SendRoomConfigurationRpc),
-                    roomConfig.StartTime.ToBinary()
-                );
-            });
-    }
+    public void RequestRoomConfiguration() => RequestRoomConfigRpcId(Players.Keys.Min());
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-    private void RegisterPlayerRpc(int peerId, string name)
+    private void RegisterPlayer(int peerId, string name)
     {
         var newPlayer = new Player(peerId, name);
         Players.Add(peerId, newPlayer);
         playerJoined.OnNext(newPlayer);
-
-        GD.Print($"Registered player {name}");
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-    private void SendRoomConfigurationRpc(long utcStartDateTime)
+    private void RequestRoomConfig()
+    {
+        if (RoomConfig is null)
+        {
+            GD.PrintErr("Failed to send room config: Config is null");
+            return;
+        }
+        SendRoomConfigurationRpcId(
+            Multiplayer.GetRemoteSenderId(),
+            RoomConfig.StartTime.ToBinary()
+        );
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+    private void SendRoomConfiguration(long utcStartDateTime)
     {
         var startTime = DateTime.FromBinary(utcStartDateTime);
-        var config = new RoomConfiguration(startTime);
-        roomConfigTcs.TrySetResult(config);
+        RoomConfig = new RoomConfiguration(startTime);
+        roomConfigTcs.TrySetResult(RoomConfig);
     }
 }

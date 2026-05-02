@@ -5,13 +5,10 @@ namespace AirBrawl2.Networking;
 
 public partial class RoomManager : Node
 {
-    // TODO: Use a source generator
-    public static RoomManager Instance =>
-        field ??= (Engine.GetMainLoop() as SceneTree)!.Root.GetNodeOrNull<RoomManager>("/root/RoomManager");
-
     private readonly Signaling signaling = new();
-    private Room? room;
+    public Room? Room;
 
+    public new bool Ready => signaling.Connected;
     public event Action? RoomManagerReady;
 
     public override void _EnterTree()
@@ -32,13 +29,16 @@ public partial class RoomManager : Node
         multiplayer.CreateMesh(1);
         Multiplayer.MultiplayerPeer = multiplayer;
 
-        room = new Room(roomId, 1);
-        AddChild(room);
+        Room = new Room(roomId, 1);
+        AddChild(Room);
 
-        return room;
+        // Wait for the room config to be created
+        await Room.RoomConfigTask;
+
+        return Room;
     }
 
-    public async Task<Room> JoinRoom(RoomId roomId)
+    public async Task JoinRoom(RoomId roomId)
     {
         var peerId = await signaling.JoinRoom(roomId);
 
@@ -46,8 +46,8 @@ public partial class RoomManager : Node
         multiplayer.CreateMesh(peerId);
         Multiplayer.MultiplayerPeer = multiplayer;
 
-        room = new Room(roomId, peerId);
-        AddChild(room);
+        Room = new Room(roomId, peerId);
+        AddChild(Room);
 
         // Connect players
         var playersConnectionInfo = await signaling.GetConnectionInfo();
@@ -62,14 +62,24 @@ public partial class RoomManager : Node
                 .ToArray();
 
         await Task.WhenAll(tasks);
-        return room;
+
+        // Wait for all players to be connected
+        var numberOfPlayers = playersConnectionInfo.PlayersConnectionInfo.Length;
+        await Task.Run(() =>
+        {
+            while (Room.Players.Count <= numberOfPlayers) { }
+        });
+
+        // Wait for the room config to be synced
+        Room.RequestRoomConfiguration();
+        await Room.RoomConfigTask;
     }
 
     public async Task QuitRoom()
     {
-        if (room is null) return;
-        room.Quit();
-        room.QueueFree();
+        if (Room is null) return;
+        Room.Quit();
+        Room.QueueFree();
 
         if (Multiplayer.MultiplayerPeer is not WebRtcMultiplayerPeer multiplayer)
         {
