@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Reactive.Subjects;
+using Godot;
 
 namespace AirBrawl2.Networking;
 
@@ -13,6 +14,13 @@ namespace AirBrawl2.Networking;
 
 public partial class Room
 {
+    public readonly Dictionary<int, Player> Players = new();
+    private readonly Subject<Player> playerJoined = new();
+    private readonly Subject<Player> playerLeft = new();
+
+    public IObservable<Player> PlayerJoined => playerJoined;
+    public IObservable<Player> PlayerLeft => playerLeft;
+
     public override void _EnterTree()
     {
         Multiplayer.MultiplayerPeer.PeerConnected += MultiplayerOnPeerConnected; // Register with future players

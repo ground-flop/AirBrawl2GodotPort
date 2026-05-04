@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://dr38qxgmhiib0"]
 
-[ext_resource type="Script" uid="uid://r31wnc0oxnr4" path="res://scripts/GameUi.cs" id="1_j5yw3"]
+[ext_resource type="Script" uid="uid://r31wnc0oxnr4" path="res://scripts/Game.cs" id="1_j5yw3"]
 [ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://materials/shattered mars or something.blend" id="2_j5yw3"]
 [ext_resource type="PackedScene" uid="uid://28g6qhhglq6h" path="res://Scenes/Environment/wall.tscn" id="3_kldst"]
+[ext_resource type="Script" uid="uid://br666m5rrjq4g" path="res://scripts/PlaneSpawner.cs" id="4_kldst"]
+[ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/Plane/plane.tscn" id="5_b2bpf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gl6un"]
 bg_color = Color(0.19215687, 0.19215687, 0.19215687, 0.69411767)
@@ -18,6 +20,7 @@ sky = SubResource("Sky_0f350")
 volumetric_fog_density = 0.01
 
 [node name="Game" type="Node3D" unique_id=1010967916]
+script = ExtResource("1_j5yw3")
 
 [node name="Pre-game" type="Panel" parent="." unique_id=1724004982]
 anchors_preset = 15
@@ -26,7 +29,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_gl6un")
-script = ExtResource("1_j5yw3")
 
 [node name="Margin" type="MarginContainer" parent="Pre-game" unique_id=1992838812]
 layout_mode = 1
@@ -85,5 +87,10 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
 [node name="Wall" parent="World" unique_id=1176622746 instance=ExtResource("3_kldst")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.1684875, 107.942215, 55.600513)
+
+[node name="PlaneSpawner" type="Node" parent="." unique_id=336757029]
+script = ExtResource("4_kldst")
+spawnPath = NodePath("../Planes")
+planeScene = ExtResource("5_b2bpf")
 
 [connection signal="pressed" from="Pre-game/Margin/QuitRoom/Button" to="Pre-game" method="QuitRoom"]

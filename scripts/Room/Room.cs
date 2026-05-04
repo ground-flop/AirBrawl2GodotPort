@@ -1,5 +1,4 @@
-﻿using System.Reactive.Subjects;
-using Godot;
+﻿using Godot;
 using SignalingServer.Signaling;
 
 namespace AirBrawl2.Networking;
@@ -13,13 +12,6 @@ public partial class Room : Node
     private readonly TaskCompletionSource<RoomConfiguration> roomConfigTcs = new();
     public Task<RoomConfiguration> RoomConfigTask => roomConfigTcs.Task;
     public RoomConfiguration? RoomConfig;
-
-    public readonly Dictionary<int, Player> Players = new();
-    private readonly Subject<Player> playerJoined = new();
-    private readonly Subject<Player> playerLeft = new();
-
-    public IObservable<Player> PlayerJoined => playerJoined;
-    public IObservable<Player> PlayerLeft => playerLeft;
 
     public Room(RoomId roomId, int peerId)
     {

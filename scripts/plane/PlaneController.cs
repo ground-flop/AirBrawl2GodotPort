@@ -1,55 +1,56 @@
+using AirBrawl2.Networking;
+using AirBrawl2.scripts;
 using Godot;
 
+[SceneTree("../../Scenes/Plane/plane.tscn", true)]
 public partial class PlaneController : Node3D
 {
-    Camera3D CameraObject;
-    Node3D CameraTarget;
-    PanelContainer Menu;
-    PlaneBodyController PlaneBody;
-    Godot.Timer RegenerationTimer;
+    private Camera3D  CameraObject => _.PlaneCamera;
+    private Node3D  CameraTarget => _.PlaneBody.CamInterpolateTo;
+    private PanelContainer  Menu => _.PlaneBody.Control.menu;
+    private PlaneBodyController  PlaneBody => _.PlaneBody;
+    private Godot.Timer  RegenerationTimer => _.RegenerationTimer;
+    private MultiplayerSynchronizer Synchronizer => _.MultiplayerSynchronizer;
 
-    [Export]
-    bool SinglePlayer = false;
-    [Export]
-    bool MouseYaw = false;
-    [Export]
-    float YawSensitivity = 3.0f;
-    [Export]
-    float RollSensitivity = 3.0f;
-    [Export]
-    float MaxSpeed = 250.0f;
-    [Export]
-    Vector3 StartPosition = new Vector3(100, 100, 0);
-    [Export]
-    float MinFov = 60.0f;
-    [Export]
-    float MaxFov = 120.0f;
-    [Export]
-    float RegenerationRequirementTime = 1f;
-    [Export]
-    float RegenerationDuration = 1.5f;
+    [Export] private bool SinglePlayer;
+    [Export] private bool MouseYaw;
+    [Export] private float YawSensitivity = 3.0f;
+    [Export] private float RollSensitivity = 3.0f;
+    [Export] private float MaxSpeed = 250.0f;
+    [Export] private Vector3 StartPosition = new(100, 100, 0);
+    [Export] private float MinFov = 60.0f;
+    [Export] private float MaxFov = 120.0f;
+    [Export] private float RegenerationRequirementTime = 1f;
+    [Export] private float RegenerationDuration = 1.5f;
 
-    float Health = 100f;
-    [Export]
-    float MaxHealth = 100f;
+    private float Health = 100f;
+    [Export] private float MaxHealth = 100f;
 
-    public override void _EnterTree() => SetMultiplayerAuthority(int.Parse(Name));
+    private Room room = null!;
+    private readonly CancellationTokenSource nodeAliveCts = new();
+    private CancellationToken NodeAliveCt => nodeAliveCts.Token;
 
-    public override void _Ready()
+    public override void _EnterTree()
     {
+        SetMultiplayerAuthority(int.Parse(Name));
         GlobalPosition = StartPosition;
+
+        if (Singletons.RoomManager.Room is null)
+        {
+            GD.PrintErr("Cannot initialize plane: room is null");
+            return;
+        }
+        room = Singletons.RoomManager.Room;
+
         if (!IsMultiplayerAuthority())
         {
-            SetProcess(false);
-            SetPhysicsProcess(false);
+            room.SpawnedPlane(GetMultiplayerAuthority());
             return;
         }
 
-        CameraObject = GetNode<Camera3D>("PlaneCamera");
-        CameraTarget = GetNode<Node3D>("PlaneBody/CamInterpolateTo");
-        Menu = GetNode<PanelContainer>("PlaneBody/Control/menu");
-        PlaneBody = GetNode<PlaneBodyController>("PlaneBody");
-        RegenerationTimer = GetNode<Godot.Timer>("RegenerationTimer");
+        Synchronizer.SetVisibilityPublic(false);
+        room.PlaneSpawned.Subscribe(remotePeerId => Synchronizer.SetVisibilityFor(remotePeerId, true), NodeAliveCt);
+        room.PlaneDespawned.Subscribe(remotePeerId => Synchronizer.SetVisibilityFor(remotePeerId, false), NodeAliveCt);
 
         LoadSettings();
 
@@ -63,8 +64,15 @@ public partial class PlaneController : Node3D
         InitializePlaneBody();
     }
 
+    public override void _ExitTree()
+    {
+        if (IsMultiplayerAuthority()) return;
+        room.DespawnedPlane(GetMultiplayerAuthority());
+    }
+
     public override void _Process(double delta)
     {
+        if (!IsMultiplayerAuthority()) return;
         UpdateCamera(delta);
         if (Menu.Visible)
         {
@@ -143,7 +151,7 @@ public partial class PlaneController : Node3D
         Health += changeHealth;
         if (Health < 1f)
         {
-            Spawn();
+            // Spawn();
             RegenerationTimer.Stop();
         } else {
             RegenerationTimer.Start();
@@ -156,18 +164,18 @@ public partial class PlaneController : Node3D
         MyTween.TweenProperty(this, "Health", MaxHealth, RegenerationDuration);
     }
 
-    private void Spawn()
-    {
-        Health = MaxHealth;
-
-        PlaneBodyController OldPlane = PlaneBody;
-        Node NewPlane = GD.Load<PackedScene>("Scenes/Plane/PlaneBody.tscn").Instantiate();
-        AddChild(NewPlane);
-        PlaneBody = (PlaneBodyController)NewPlane;
-        CameraTarget = PlaneBody.GetNode<Node3D>("CamInterpolateTo");
-        InitializePlaneBody();
-        OldPlane.QueueFree();
-    }
+    // private void Spawn()
+    // {
+    //     Health = MaxHealth;
+    //
+    //     PlaneBodyController OldPlane = PlaneBody;
+    //     Node NewPlane = GD.Load<PackedScene>("Scenes/Plane/PlaneBody.tscn").Instantiate();
+    //     AddChild(NewPlane);
+    //     PlaneBody = (PlaneBodyController)NewPlane;
+    //     CameraTarget = PlaneBody.GetNode<Node3D>("CamInterpolateTo");
+    //     InitializePlaneBody();
+    //     OldPlane.QueueFree();
+    // }
 
     public void OnImpact(float ImpactVelocity)
     {

@@ -4,14 +4,11 @@ using Godot;
 namespace AirBrawl2.scripts;
 
 [SceneTree("../Scenes/Game.tscn", root: "nodes")]
-public partial class GameUi : Node
+public partial class Game : Node
 {
-    private Label RoomIdLabel => nodes.Pre_game.Margin.QuitRoom.RoomId;
-    private Control PlayersList => nodes.Pre_game.Margin.Players;
-    private Label CountdownLabel => nodes.Pre_game.Margin.StartCountdown;
-
     private Room room = null!;
     private RoomConfiguration roomConfig = null!;
+    private bool countdownRunning = true;
 
     public override void _EnterTree()
     {
@@ -31,26 +28,18 @@ public partial class GameUi : Node
 
         RoomIdLabel.Text = room.RoomId.ToString();
 
-        // Bind players to UI
-        foreach (var playersValue in room.Players.Values) AddPlayerToUi(playersValue);
-        room.PlayerJoined.Subscribe(AddPlayerToUi);
-
-        room.PlayerLeft.Subscribe(player => PlayersList
-            .GetNodeOrNull(player.PeerId.ToString())
-            ?.QueueFree()
-        );
-
-        return;
-        void AddPlayerToUi(Player newPlayer) => PlayersList.AddChild(new Label { Name = newPlayer.PeerId.ToString(), Text = newPlayer.Name });
+        SetupUi();
     }
 
     public override void _Process(double delta)
     {
-        var remainingTime = roomConfig.StartTime - DateTime.UtcNow;
-        CountdownLabel.Text =
-            remainingTime > TimeSpan.Zero
-                ? $@"Start in {remainingTime:s\.f}s"
-                : "";
+        if (!countdownRunning) return;
+        var elapsed = UpdateCountdown();
+        if (!elapsed) return;
+
+        countdownRunning = false;
+        nodes.Pre_game.Get().Hide();
+        nodes.PlaneSpawner.SpawnPlanes(room);
     }
 
     private async void QuitRoom()

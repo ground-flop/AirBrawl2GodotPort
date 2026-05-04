@@ -39,6 +39,8 @@ public partial class PlaneBodyController : RigidBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!IsMultiplayerAuthority()) return;
+
         // --- Inputs ---
         if (Input.MouseMode != Input.MouseModeEnum.Captured) return;
         Vector2 mouse = Input.GetLastMouseVelocity() / DisplayServer.ScreenGetSize();
@@ -85,6 +87,8 @@ public partial class PlaneBodyController : RigidBody3D
     }
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
+        if (!IsMultiplayerAuthority()) return;
+
         for (int i = 0; i < state.GetContactCount(); i++)
         {
             Vector3 normal = state.GetContactLocalNormal(i);
