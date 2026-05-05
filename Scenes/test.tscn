@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bjaf7m2l6qxa0"]
+
+[ext_resource type="ArrayMesh" uid="uid://botpn1p3klu2v" path="res://Models/skybox.obj" id="1_8od7v"]
+[ext_resource type="PackedScene" uid="uid://bv06qm7786v4v" path="res://Scenes/Plane/plane.tscn" id="2_qc4db"]
+
+[node name="Test" type="Node3D"]
+
+[node name="Skybox" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6182985, 0, -35.090473)
+mesh = ExtResource("1_8od7v")
+
+[node name="Plane" parent="." instance=ExtResource("2_qc4db")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.980103, 62.75999, 101.785675)
