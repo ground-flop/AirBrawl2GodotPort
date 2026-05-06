@@ -1,14 +1,12 @@
 [gd_scene format=3 uid="uid://dhj8la6fkcr1n"]
 
 [ext_resource type="Script" uid="uid://4qluvb3mlgbq" path="res://scripts/Home.cs" id="1_oauki"]
-[ext_resource type="PackedScene" uid="uid://dr38qxgmhiib0" path="res://Scenes/Game.tscn" id="2_oauki"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oauki"]
 bg_color = Color(0.19215687, 0.19215687, 0.19215687, 0.69411767)
 
 [node name="Home" type="Node3D" unique_id=1738285438]
 script = ExtResource("1_oauki")
-gameScene = ExtResource("2_oauki")
 
 [node name="UI" type="Panel" parent="." unique_id=1473086393]
 anchors_preset = 15

@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://b34p47dlotjdj" path="res://materials/shattered mars or something.blend" id="1_k5f4k"]
 [ext_resource type="PackedScene" uid="uid://28g6qhhglq6h" path="res://Scenes/Environment/wall.tscn" id="3_6phgx"]
-[ext_resource type="Script" uid="uid://4qluvb3mlgbq" path="res://scripts/RoomUi.cs" id="4_81xng"]
+[ext_resource type="Script" uid="uid://4qluvb3mlgbq" path="res://scripts/Home.cs" id="4_81xng"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wqkje"]
 

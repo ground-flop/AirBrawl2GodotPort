@@ -26,7 +26,7 @@ public partial class Game
 
     private bool UpdateCountdown()
     {
-        var remainingTime = roomConfig.StartTime - DateTime.UtcNow;
+        var remainingTime = roomConfig.StartTime - DateTime.UtcNow + Singletons.TimeSynchronizer.ClockDelta;
         var elapsed = remainingTime <= TimeSpan.Zero;
         CountdownLabel.Text =
             elapsed

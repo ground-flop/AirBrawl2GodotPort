@@ -1,3 +1,4 @@
+using AirBrawl2.scripts;
 using Godot;
 using SignalingServer.Signaling;
 
@@ -69,6 +70,8 @@ public partial class RoomManager : Node
         {
             while (Room.Players.Count <= numberOfPlayers) { }
         });
+
+        Singletons.TimeSynchronizer.Start();
 
         // Wait for the room config to be synced
         Room.RequestRoomConfiguration();

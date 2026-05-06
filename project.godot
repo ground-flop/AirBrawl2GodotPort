@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 RoomManager="*uid://ctv570tyv480e"
 Scenes="*uid://bie7fkicwue47"
+TimeSynchronizer="*uid://c5fyvhqtyktvt"
 
 [dotnet]
 
