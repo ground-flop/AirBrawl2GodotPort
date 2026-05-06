@@ -27,17 +27,18 @@ public partial class TimeSynchronizer : Node
         }
         var room = Singletons.RoomManager.Room;
 
-        switch (room.Players.Count)
+        // Determine reference player
+        if (room.Players.Count == 0)
         {
-            // Determine reference player
-            case 0:
-                GD.PrintErr("Failed to start time synchronization, no players in room");
-                return;
-            case 1:
-                GD.Print("Stopping time synchronization because we are now the time reference");
-                return;
+            GD.PrintErr("Failed to start time synchronization, no players in room");
+            return;
         }
         var referencePlayer = room.Players.MinBy(kv => kv.Key).Value;
+        if (referencePlayer.PeerId == room.LocalPlayer.PeerId)
+        {
+            GD.Print("Stopping time synchronization because we are now the time reference");
+            return;
+        }
 
         // Cancel time synchronization when we quit the room
         var cts = new CancellationTokenSource();
@@ -46,7 +47,7 @@ public partial class TimeSynchronizer : Node
 
         room.PlayerLeft.Subscribe(p => // When reference disconnects, restart time sync
             {
-                if (p.PeerId == referencePlayer.PeerId) return;
+                if (p.PeerId != referencePlayer.PeerId) return;
                 cts.Cancel();
                 Start();
             },
@@ -135,21 +136,21 @@ public partial class TimeSynchronizer : Node
 
     private void PollTime(int referencePeerId)
     {
-        var time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         RpcId(referencePeerId, nameof(PollTimeRpc), time);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
     private void PollTimeRpc(long requestTime)
     {
-        var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         RpcId(Multiplayer.GetRemoteSenderId(), nameof(AnswerRpc), requestTime, now);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
     private void AnswerRpc(long requestTime, long receivedTime)
     {
-        var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        var currentTime = (DateTimeOffset.UtcNow + ClockDelta).ToUnixTimeMilliseconds();
         var clockDelta = (receivedTime - requestTime + receivedTime - currentTime) / 2;
         clockDeltaMeasurements.OnNext(clockDelta);
     }

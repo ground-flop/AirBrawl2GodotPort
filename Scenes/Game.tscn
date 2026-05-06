@@ -93,4 +93,4 @@ script = ExtResource("4_kldst")
 spawnPath = NodePath("../Planes")
 planeScene = ExtResource("5_b2bpf")
 
-[connection signal="pressed" from="Pre-game/Margin/QuitRoom/Button" to="Pre-game" method="QuitRoom"]
+[connection signal="pressed" from="Pre-game/Margin/QuitRoom/Button" to="." method="QuitRoom"]

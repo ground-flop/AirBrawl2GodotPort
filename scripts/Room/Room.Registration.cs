@@ -33,8 +33,8 @@ public partial class Room
     private void MultiplayerOnPeerDisconnected(long id)
     {
         if (!Players.TryGetValue((int)id, out var player)) return;
-        playerLeft.OnNext(player);
         Players.Remove(player.PeerId);
+        playerLeft.OnNext(player);
     }
 
     private void MultiplayerOnPeerConnected(long id) =>
