@@ -67,6 +67,7 @@ public partial class PlaneController : Node3D
     public override void _ExitTree()
     {
         if (IsMultiplayerAuthority()) return;
+        if (!room.Players.ContainsKey(GetMultiplayerAuthority())) return;
         room.DespawnedPlane(GetMultiplayerAuthority());
     }
 
