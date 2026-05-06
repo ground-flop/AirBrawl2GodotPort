@@ -3,6 +3,9 @@
 AirBrawl 2 uses [WebRTC](https://webrtc.org/) to connects players.  
 Each player is connected to each other, forming a mesh.
 
+No player have a "host" like role. Except for time synchronization where 
+the player who joined the game the soonest is the time reference.
+
 ## What happens during a connection initialization ?
 A connection initialization happens between 2 peers.  
 On peer is the offerer and post an offer.  
