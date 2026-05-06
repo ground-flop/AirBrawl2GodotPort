@@ -136,7 +136,7 @@ public class Signaling
 
     public async Task<OffererConnectionAttempt> StartConnectionAttempt(SdpDescription offer)
     {
-        var res = (await hub.StartConnectionAttempt(offer));
+        var res = await hub.StartConnectionAttempt(offer);
         if (res.HasError(out var error))
         {
             GD.PrintErr("Failed to publish offer: " + error.ToLocalizedString());
@@ -151,7 +151,7 @@ public class Signaling
 
     public async Task<AnswererConnectionAttempt> JoinConnectionAttempt(ConnectionAttemptId connectionAttemptId)
     {
-        var res = (await hub.JoinConnectionAttempt(connectionAttemptId));
+        var res = await hub.JoinConnectionAttempt(connectionAttemptId);
         if (res.HasError(out var error))
         {
             GD.PrintErr(error.ToLocalizedString());

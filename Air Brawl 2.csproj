@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="scripts\external\signaling-server\src\SignalingServer.Types\SignalingServer.Types.fsproj" />
+        <ProjectReference Include="scripts\External\signaling-server\src\SignalingServer.Types\SignalingServer.Types.fsproj" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
@@ -20,5 +20,8 @@
             <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
             <CompilerGeneratedFilesOutputPath>DesiredPathForGeneratedStuff</CompilerGeneratedFilesOutputPath>
         </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="scripts\Networking\README.md" />
     </ItemGroup>
 </Project>
