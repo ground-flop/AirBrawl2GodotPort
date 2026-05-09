@@ -1,8 +1,28 @@
-<Project Sdk="Godot.NET.Sdk/4.5.1">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    <RootNamespace>AirBrawl2</RootNamespace>
-  </PropertyGroup>
+<Project Sdk="Godot.NET.Sdk/4.6.2">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+        <RootNamespace>AirBrawl2</RootNamespace>
+        <ImplicitUsings>true</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="scripts\External\signaling-server\src\SignalingServer.Types\SignalingServer.Types.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
+        <PackageReference Include="GodotSharp.SourceGenerators" Version="2.7.0-260429-2100.Release" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
+        <PackageReference Include="System.Reactive" Version="6.1.0" />
+        <PackageReference Include="TypedSignalR.Client" Version="3.6.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+            <CompilerGeneratedFilesOutputPath>DesiredPathForGeneratedStuff</CompilerGeneratedFilesOutputPath>
+        </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Content CopyToPublishDirectory="Never" Include="scripts\Networking\README.md" />
+        <Content CopyToPublishDirectory="Never" Include="scripts\Room\README.md" />
+    </ItemGroup>
 </Project>

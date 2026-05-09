@@ -39,7 +39,10 @@ public partial class PlaneBodyController : RigidBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!IsMultiplayerAuthority()) return;
+
         // --- Inputs ---
+        if (Input.MouseMode != Input.MouseModeEnum.Captured) return;
         Vector2 mouse = Input.GetLastMouseVelocity() / DisplayServer.ScreenGetSize();
 
         float pitch = -mouse.Y * YawSensitivity;
@@ -77,13 +80,15 @@ public partial class PlaneBodyController : RigidBody3D
             up * Mathf.Clamp(yaw * YawRate, -MaxYaw, MaxYaw) +
             forward * Mathf.Clamp(roll * RollRate, -MaxRoll, MaxRoll);
 
-        // smooth 
+        // smooth
         AngularVelocity = AngularVelocity.Lerp(targetAngularVelocity, RotationSmooth * (float)delta);
 
         LinearVelocity = forward * newSpeed + new Vector3(0f, -1f, 0f) * 9.81f * Mass;
     }
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
+        if (!IsMultiplayerAuthority()) return;
+
         for (int i = 0; i < state.GetContactCount(); i++)
         {
             Vector3 normal = state.GetContactLocalNormal(i);
@@ -94,5 +99,14 @@ public partial class PlaneBodyController : RigidBody3D
                 OnImpactEvent?.Invoke(impactSpeed);
             }
         }
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (!IsMultiplayerAuthority()) return;
+        if (@event is InputEventKey { Pressed: true, KeyLabel: Key.Escape })
+            Input.MouseMode = Input.MouseMode == Input.MouseModeEnum.Captured
+                ? Input.MouseModeEnum.Visible
+                : Input.MouseModeEnum.Captured;
     }
 }

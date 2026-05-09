@@ -2,6 +2,8 @@
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Air Brawl 2", "Air Brawl 2.csproj", "{AE5B6F38-E2E9-40F3-B687-B7615362E459}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SignalingServer.Types", "scripts\external\signaling-server\src\SignalingServer.Types\SignalingServer.Types.fsproj", "{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 	Debug|Any CPU = Debug|Any CPU
@@ -15,5 +17,11 @@ Global
 		{AE5B6F38-E2E9-40F3-B687-B7615362E459}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
 		{AE5B6F38-E2E9-40F3-B687-B7615362E459}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
 		{AE5B6F38-E2E9-40F3-B687-B7615362E459}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.ExportDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.ExportRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD57E5F9-B7D6-4CB2-B7A3-F26D2EAB6BFD}.ExportRelease|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
