@@ -10,22 +10,34 @@ namespace AirBrawl2.Networking;
 public partial class PeerConnection : WebRtcPeerConnection
 {
     private readonly ReplaySubject<IceCandidate> iceCandidates = new();
+    private const string Username = "823f0d8058f4558a191dc224";
+    private const string Credential = "mkr+AEV1SY7aGEYc";
+
     private static readonly Godot.Collections.Dictionary IceServers = new() {
         {
             "iceServers",
             new Godot.Collections.Array {
                 new Godot.Collections.Dictionary { { "urls", "stun:stun.relay.metered.ca:80" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun.l.google.com:19302" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun.l.google.com:5349" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun1.l.google.com:3478" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun1.l.google.com:5349" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun2.l.google.com:19302" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun2.l.google.com:5349" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun3.l.google.com:3478" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun3.l.google.com:5349" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun4.l.google.com:19302" } },
-                new Godot.Collections.Dictionary { { "urls", "stun:stun4.l.google.com:5349" } }
-                // TODO: Add turn servers
+                new Godot.Collections.Dictionary {
+                    { "urls", "turn:global.relay.metered.ca:80" },
+                    { "username", Username },
+                    { "credential", Credential }
+                },
+                new Godot.Collections.Dictionary {
+                    { "urls", "turn:global.relay.metered.ca:80?transport=tcp" },
+                    { "username", Username },
+                    { "credential", Credential }
+                },
+                new Godot.Collections.Dictionary {
+                    { "urls", "turn:global.relay.metered.ca:443" },
+                    { "username", Username },
+                    { "credential", Credential }
+                },
+                new Godot.Collections.Dictionary {
+                    { "urls", "turns:global.relay.metered.ca:443?transport=tcp" },
+                    { "username", Username },
+                    { "credential", Credential }
+                }
             }
         }
     };
