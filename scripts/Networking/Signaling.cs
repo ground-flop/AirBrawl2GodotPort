@@ -64,7 +64,8 @@ public class Signaling
     private HubConnection connection = null!;
     private ISignalingHub hub = null!;
     private HubReceiver receiver = null!;
-    public bool Connected;
+    public event Action? Connected;
+    public event Action? Disconnected;
 
     /// <summary>
     /// Receive messages from signaling hub and populate connection attempts
@@ -95,11 +96,17 @@ public class Signaling
         }
     }
 
+    private class SignalRReconnectPolicy : IRetryPolicy
+    {
+        public TimeSpan? NextRetryDelay(RetryContext retryContext) => TimeSpan.FromSeconds(3);
+    }
+
     public async Task ConnectSignalingServer(MultiplayerApi multiplayer)
     {
         connection = new HubConnectionBuilder()
-            .WithUrl("http://localhost:5001/webrtc-signaling")
-            // TODO: Make sure it works .WithAutomaticReconnect()
+            // .WithUrl("http://localhost:5001/webrtc-signaling")
+            .WithUrl("https://air-brawl.titaye.dev/webrtc-signaling")
+            .WithAutomaticReconnect(new SignalRReconnectPolicy())
             .ConfigureLogging(builder => builder.AddProvider(new GodotLoggingProvider()))
             .AddJsonProtocol(options =>
             {
@@ -112,13 +119,18 @@ public class Signaling
 
         connection.Reconnected += _ =>
         {
-            Connected = true;
+            Connected?.Invoke();
+            return Task.CompletedTask;
+        };
+        connection.Reconnecting += _ =>
+        {
+            Disconnected?.Invoke();
             return Task.CompletedTask;
         };
         connection.Closed += _ =>
         {
-            Connected = false;
             GD.PrintErr("SignalR connection closed");
+            Disconnected?.Invoke();
             return Task.CompletedTask;
         };
 
@@ -131,7 +143,7 @@ public class Signaling
 
         // Starting the connection
         await connection.StartAsync();
-        Connected = true;
+        Connected?.Invoke();
     }
 
     public async Task<OffererConnectionAttempt> StartConnectionAttempt(SdpDescription offer)

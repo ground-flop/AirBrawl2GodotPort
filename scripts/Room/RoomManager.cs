@@ -1,3 +1,4 @@
+using System.Reactive.Subjects;
 using AirBrawl2.scripts;
 using Godot;
 using SignalingServer.Signaling;
@@ -9,17 +10,14 @@ public partial class RoomManager : Node
     private readonly Signaling signaling = new();
     public Room? Room;
 
-    public new bool Ready => signaling.Connected;
-    public event Action? RoomManagerReady;
+    public readonly BehaviorSubject<bool> State = new(false);
 
     public override void _EnterTree()
     {
         var multiplayer = Multiplayer;
-        Task.Run(async () =>
-        {
-            await signaling.ConnectSignalingServer(multiplayer);
-            RoomManagerReady?.Invoke();
-        });
+        signaling.Connected += () => State.OnNext(true);
+        signaling.Disconnected += () => State.OnNext(false);
+        Task.Run(() => signaling.ConnectSignalingServer(multiplayer));
     }
 
     public async Task<Room> CreateRoom()
@@ -102,13 +100,7 @@ public partial class RoomManager : Node
         multiplayer.Close();
         Multiplayer.MultiplayerPeer = null;
 
-        try
-        {
-            await signaling.LeaveRoom();
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
+        try { await signaling.LeaveRoom(); }
+        catch (Exception) { /* ignored */ }
     }
 }

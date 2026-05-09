@@ -12,22 +12,26 @@ public partial class Home : Node
 
     private Control LoadingRoomUi => nodes.UI.Margin.Loading;
 
+    private readonly CancellationTokenSource nodeInTreeCts = new();
+    private CancellationToken NodeInTreeCt => nodeInTreeCts.Token;
+    public override void _ExitTree() => nodeInTreeCts.Cancel();
+
     public override void _EnterTree()
     {
-        ConnectRoomUi.Hide();
-        LoadingRoomUi.Show();
-
-        if (Singletons.RoomManager.Ready)
+        Singletons.RoomManager.State.Subscribe(connected =>
         {
-            ConnectRoomUi.Show();
-            LoadingRoomUi.Hide();
-        }
-        else
-            Singletons.RoomManager.RoomManagerReady += () =>
+            if (connected)
             {
-                LoadingRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
                 ConnectRoomUi.CallDeferred(CanvasItem.MethodName.Show);
-            };
+                LoadingRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
+            }
+            else
+            {
+                ConnectRoomUi.CallDeferred(CanvasItem.MethodName.Hide);
+                LoadingRoomUi.CallDeferred(CanvasItem.MethodName.Show);
+            }
+
+        }, NodeInTreeCt);
     }
 
     private void ResetUi()
