@@ -5,26 +5,26 @@ using Godot;
 [SceneTree("../../Scenes/Plane/plane.tscn", true)]
 public partial class PlaneController : Node3D
 {
-    private Camera3D  CameraObject => _.PlaneCamera;
-    private Node3D  CameraTarget => _.PlaneBody.CamInterpolateTo;
-    private PanelContainer  Menu => _.PlaneBody.Control.menu;
-    private PlaneBodyController  PlaneBody => _.PlaneBody;
-    private Godot.Timer  RegenerationTimer => _.RegenerationTimer;
+    private Camera3D CameraObject => _.PlaneCamera;
+    private Node3D CameraTarget => _.PlaneBody.CamInterpolateTo;
+    private PanelContainer Menu => _.PlaneBody.Control.menu;
+    private PlaneBodyController PlaneBody => _.PlaneBody;
+    private Godot.Timer RegenerationTimer => _.RegenerationTimer;
     private MultiplayerSynchronizer Synchronizer => _.MultiplayerSynchronizer;
 
-    [Export] private bool SinglePlayer;
-    [Export] private bool MouseYaw;
-    [Export] private float YawSensitivity = 3.0f;
-    [Export] private float RollSensitivity = 3.0f;
-    [Export] private float MaxSpeed = 250.0f;
-    [Export] private Vector3 StartPosition = new(100, 100, 0);
-    [Export] private float MinFov = 60.0f;
-    [Export] private float MaxFov = 120.0f;
-    [Export] private float RegenerationRequirementTime = 1f;
-    [Export] private float RegenerationDuration = 1.5f;
+    [Export] private bool singlePlayer;
+    [Export] private bool mouseYaw;
+    [Export] private float yawSensitivity = 3.0f;
+    [Export] private float rollSensitivity = 3.0f;
+    [Export] private float maxSpeed = 250.0f;
+    [Export] private Vector3 startPosition = new(100, 100, 0);
+    [Export] private float minFov = 60.0f;
+    [Export] private float maxFov = 120.0f;
+    [Export] private float regenerationRequirementTime = 1f;
+    [Export] private float regenerationDuration = 1.5f;
 
-    private float Health = 100f;
-    [Export] private float MaxHealth = 100f;
+    private float health = 100f;
+    [Export] private float maxHealth = 100f;
 
     private Room room = null!;
     private readonly CancellationTokenSource nodeAliveCts = new();
@@ -33,7 +33,7 @@ public partial class PlaneController : Node3D
     public override void _EnterTree()
     {
         SetMultiplayerAuthority(int.Parse(Name));
-        GlobalPosition = StartPosition;
+        GlobalPosition = startPosition;
 
         if (Singletons.RoomManager.Room is null)
         {
@@ -54,9 +54,8 @@ public partial class PlaneController : Node3D
 
         LoadSettings();
 
-        // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
-        Health = MaxHealth;
-        RegenerationTimer.WaitTime = RegenerationRequirementTime;
+        health = maxHealth;
+        RegenerationTimer.WaitTime = regenerationRequirementTime;
         RegenerationTimer.OneShot = true;
 
         CameraObject.MakeCurrent();
@@ -71,125 +70,83 @@ public partial class PlaneController : Node3D
         room.DespawnedPlane(GetMultiplayerAuthority());
     }
 
-    public override void _Process(double delta)
+    public override void _PhysicsProcess(double delta)
     {
         if (!IsMultiplayerAuthority()) return;
-        UpdateCamera(delta);
-        if (Menu.Visible)
-        {
-            // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Visible);
-            return;
-        }
-        else
-        {
-            // Godot.Input.SetMouseMode(Godot.Input.MouseModeEnum.Captured);
-        }
 
-        UpdateFov();
-    }
-
-    private void UpdateCamera(double delta)
-    {
-        float t = 1.0f - Mathf.Pow(0.001f, (float)delta);
-
-        Transform3D from = CameraObject.GlobalTransform;
-        Transform3D to = CameraTarget.GlobalTransform;
-
+        // Update camera position
+        var t = 1.0f - Mathf.Pow(0.001f, (float)delta);
+        var from = CameraObject.GlobalTransform;
+        var to = CameraTarget.GlobalTransform;
         CameraObject.GlobalTransform = from.InterpolateWith(to, t);
-    }
 
-    private void UpdateFov()
-    {
-        this.CameraObject.Fov = float.Lerp(MinFov, MaxFov, (float)(PlaneBody.Get("speed").AsDouble() / PlaneBody.Get("MaxSpeed").AsDouble()));
+        // Update FOV
+        CameraObject.Fov = float.Lerp(minFov, maxFov, PlaneBody.LinearVelocity.Length() / PlaneBody.MaxSpeed);
     }
 
     private void LoadSettings()
     {
-        ConfigFile cfg = new ConfigFile();
+        var cfg = new ConfigFile();
+        if (cfg.Load("user://settings.cfg") != Error.Ok) return;
 
-        if (cfg.Load("user://settings.cfg") == Godot.Error.Ok)
-        {
-            MouseYaw = (bool)cfg.GetValue("controls", "MouseYaw", false);
-            YawSensitivity = (float)cfg.GetValue("controls", "YawSensitivity", 3.0f);
-            RollSensitivity = (float)cfg.GetValue("controls", "RollSensitivity", 3.0f);
-        }
+        mouseYaw = (bool)cfg.GetValue("controls", "MouseYaw", true);
+        yawSensitivity = (float)cfg.GetValue("controls", "YawSensitivity", 3.0f);
+        rollSensitivity = (float)cfg.GetValue("controls", "RollSensitivity", 3.0f);
     }
 
-    private void SetMouseYaw(bool MouseYaw)
+    private void SetMouseYaw(bool newMouseYaw)
     {
-        this.MouseYaw = MouseYaw;
-        PlaneBody.MouseYaw = MouseYaw;
+        mouseYaw = newMouseYaw;
+        PlaneBody.MouseYaw = newMouseYaw;
         SaveSettings();
     }
 
-    private void SetYawSensitivity(float YawSensitivity)
+    private void SetYawSensitivity(float newYawSensitivity)
     {
-        this.YawSensitivity = YawSensitivity;
-        PlaneBody.YawSensitivity = YawSensitivity;
+        yawSensitivity = newYawSensitivity;
+        PlaneBody.YawSensitivity = newYawSensitivity;
         SaveSettings();
     }
 
-    private void SetRollSensitivity(float RollSensitivity)
+    private void SetRollSensitivity(float newRollSensitivity)
     {
-        this.RollSensitivity = RollSensitivity;
-        PlaneBody.RollSensitivity = RollSensitivity;
+        rollSensitivity = newRollSensitivity;
+        PlaneBody.RollSensitivity = newRollSensitivity;
         SaveSettings();
     }
 
     private void SaveSettings()
     {
-        ConfigFile cfg = new ConfigFile();
+        var cfg = new ConfigFile();
 
-        cfg.SetValue("controls", "MouseYaw", MouseYaw);
-        cfg.SetValue("controls", "YawSensitivity", YawSensitivity);
-        cfg.SetValue("controls", "RollSensitivity", RollSensitivity);
+        cfg.SetValue("controls", "MouseYaw", mouseYaw);
+        cfg.SetValue("controls", "YawSensitivity", yawSensitivity);
+        cfg.SetValue("controls", "RollSensitivity", rollSensitivity);
 
         cfg.Save("user://settings.cfg");
     }
 
-    public void ChangeHealth(float changeHealth)
+    private void ChangeHealth(float changeHealth)
     {
-        Health += changeHealth;
-        if (Health < 1f)
-        {
-            // Spawn();
+        health += changeHealth;
+        if (health < 1f)
             RegenerationTimer.Stop();
-        } else {
+        else
             RegenerationTimer.Start();
-        }
     }
 
-    private void RegenerateHealth() {
+    private void RegenerateHealth() =>
+        CreateTween().TweenProperty(this, nameof(health), maxHealth, regenerationDuration);
 
-        Tween MyTween = GetTree().CreateTween();
-        MyTween.TweenProperty(this, "Health", MaxHealth, RegenerationDuration);
-    }
-
-    // private void Spawn()
-    // {
-    //     Health = MaxHealth;
-    //
-    //     PlaneBodyController OldPlane = PlaneBody;
-    //     Node NewPlane = GD.Load<PackedScene>("Scenes/Plane/PlaneBody.tscn").Instantiate();
-    //     AddChild(NewPlane);
-    //     PlaneBody = (PlaneBodyController)NewPlane;
-    //     CameraTarget = PlaneBody.GetNode<Node3D>("CamInterpolateTo");
-    //     InitializePlaneBody();
-    //     OldPlane.QueueFree();
-    // }
-
-    public void OnImpact(float ImpactVelocity)
-    {
-
+    private void OnImpact(float impactVelocity) =>
         ChangeHealth(-PlaneBody.LinearVelocity.Length() * 2);
-    }
 
     private void InitializePlaneBody()
     {
-        PlaneBody.MaxSpeed = MaxSpeed;
-        PlaneBody.YawSensitivity = YawSensitivity;
-        PlaneBody.RollSensitivity = RollSensitivity;
-        PlaneBody.MouseYaw = MouseYaw;
+        PlaneBody.MaxSpeed = maxSpeed;
+        PlaneBody.YawSensitivity = yawSensitivity;
+        PlaneBody.RollSensitivity = rollSensitivity;
+        PlaneBody.MouseYaw = mouseYaw;
 
         PlaneBody.OnImpactEvent += OnImpact;
     }
