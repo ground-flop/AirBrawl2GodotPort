@@ -9,6 +9,7 @@
 [node name="PlaneBody" type="RigidBody3D" unique_id=265766258]
 collision_mask = 7
 gravity_scale = 0.0
+can_sleep = false
 script = ExtResource("1_ugd70")
 
 [node name="Ship" type="MeshInstance3D" parent="." unique_id=953663950]
